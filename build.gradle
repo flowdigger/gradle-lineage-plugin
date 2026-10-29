@@ -1,0 +1,24 @@
+plugins {
+    id 'groovy-gradle-plugin'
+    id 'java-gradle-plugin'
+    id 'maven-publish'
+}
+
+group = 'name.jurgenei.lineage'
+version = '0.1.0-SNAPSHOT'
+
+repositories {
+    gradlePluginPortal()
+    mavenCentral()
+}
+
+gradlePlugin {
+    plugins {
+        lineageConventions {
+            id = 'name.jurgenei.gradle.lineage'
+            implementationClass = 'name.jurgenei.lineage.LineageConventionsPlugin'
+            displayName = 'Lineage pipeline conventions plugin'
+            description = 'Externalized and parameterized conventions for the 1.parse..9.publish lineage pipeline.'
+        }
+    }
+}
