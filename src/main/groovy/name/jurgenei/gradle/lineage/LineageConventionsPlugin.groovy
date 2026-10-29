@@ -8,12 +8,7 @@ import java.io.BufferedInputStream
 import java.io.FileInputStream
 
 class LineageConventionsPlugin implements Plugin<Project> {
-    private static final Set<String> SUPPORTED_PARSER_PLUGINS = [
-            'name.jurgenei.gradle.antlr.java',
-            'name.jurgenei.gradle.antlr.plsql',
-            'name.jurgenei.gradle.antlr.sas',
-            'name.jurgenei.gradle.antlr.tsql'
-    ] as Set
+    private static final String ANTLR_PLUGIN_ID = 'name.jurgenei.gradle.antlr'
 
     @Override
     void apply(Project project) {
@@ -864,8 +859,8 @@ class LineageConventionsPlugin implements Plugin<Project> {
                 if (!parserPlugin) {
                     throw new GradleException("sourceSet '${sourceSetName}' must set parserPlugin.")
                 }
-                if (!SUPPORTED_PARSER_PLUGINS.contains(parserPlugin)) {
-                    throw new GradleException("Unsupported parser plugin '${parserPlugin}' for sourceSet '${sourceSetName}'. Supported: ${SUPPORTED_PARSER_PLUGINS.sort().join(', ')}")
+                if (!isAcceptedParserPlugin(parserPlugin)) {
+                    throw new GradleException("Unsupported parser plugin '${parserPlugin}' for sourceSet '${sourceSetName}'. Accepted: ${ANTLR_PLUGIN_ID} and ${ANTLR_PLUGIN_ID}.*")
                 }
 
                 def includes = (sourceSet.includes.get() ?: []).collect { it.toString() }.findAll { !it.isBlank() }
@@ -973,7 +968,12 @@ class LineageConventionsPlugin implements Plugin<Project> {
         if (parserPluginId.endsWith(".plsql")) return "plsql"
         if (parserPluginId.endsWith(".sas")) return "sas"
         if (parserPluginId.endsWith(".tsql")) return "tsql"
-        throw new GradleException("Unsupported parser plugin '${parserPluginId}'.")
+        if (parserPluginId == ANTLR_PLUGIN_ID || parserPluginId.startsWith("${ANTLR_PLUGIN_ID}.")) return "antlr"
+        throw new GradleException("Unsupported parser plugin '${parserPluginId}'. Accepted: ${ANTLR_PLUGIN_ID} and ${ANTLR_PLUGIN_ID}.*")
+    }
+
+    private static boolean isAcceptedParserPlugin(String parserPluginId) {
+        parserPluginId == ANTLR_PLUGIN_ID || parserPluginId.startsWith("${ANTLR_PLUGIN_ID}.")
     }
 
     private static String normalizeSourceDirectory(Project project, Object rawSourceDirectory) {
