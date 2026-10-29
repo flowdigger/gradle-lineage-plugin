@@ -3,9 +3,9 @@ package name.jurgenei.gradle.lineage
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.tasks.Copy
 import java.io.BufferedInputStream
 import java.io.FileInputStream
+
 
 class LineageConventionsPlugin implements Plugin<Project> {
     private static final String ANTLR_PLUGIN_ID = 'name.jurgenei.gradle.antlr'
@@ -21,7 +21,7 @@ class LineageConventionsPlugin implements Plugin<Project> {
         ext.lineageBuildRoot = (
                 project.findProperty('buildRoot')
                         ?: project.findProperty('lineageBuildRoot')
-                        ?: java.lang.System.getenv('LINEAGE_BUILD_ROOT')
+                        ?: project.providers.environmentVariable('LINEAGE_BUILD_ROOT').orNull
                         ?: project.layout.buildDirectory.dir('lineage-uniform').get().asFile.absolutePath
         ).toString()
         project.rootProject.ext.resolveLineageConfig = { ->
@@ -53,6 +53,7 @@ class LineageConventionsPlugin implements Plugin<Project> {
         def schematronTaskClass = LineageConventionsPlugin.classLoader.loadClass('name.jurgenei.gradle.xml.SchematronTask')
         def ooxmlTaskClass = LineageConventionsPlugin.classLoader.loadClass('name.jurgenei.gradle.ooxml.OoXmlToCanonicalTask')
         def pythonRunnerTaskClass = LineageConventionsPlugin.classLoader.loadClass('name.jurgenei.gradle.python.PythonRunnerTask')
+        def copyTaskClass = LineageConventionsPlugin.classLoader.loadClass('org.gradle.api.tasks.Copy')
 
         def toTaskSuffix = { String key ->
             key.split(/[^A-Za-z0-9]+/)
@@ -69,7 +70,7 @@ class LineageConventionsPlugin implements Plugin<Project> {
         }
         def includedPluginBuild = project.gradle.includedBuilds.find { it.name == 'gradle-lineage-plugin' }
         def pipelineRoot = (project.findProperty('lineagePluginPipelineRoot')
-                ?: java.lang.System.getenv('LINEAGE_PLUGIN_PIPELINE_ROOT')
+                ?: project.providers.environmentVariable('LINEAGE_PLUGIN_PIPELINE_ROOT').orNull
                 ?: (includedPluginBuild != null ? new File(includedPluginBuild.projectDir, 'pipeline').absolutePath : "${project.rootProject.projectDir}/build-logic/pipeline"))
                 .toString()
         def toCollectionUri = { String dirPath, String selectPattern ->
@@ -493,7 +494,7 @@ class LineageConventionsPlugin implements Plugin<Project> {
             onlyIf { !cfg.skipValidations && cfg.javaEnabled }
             doLast {
                 def failOnZeroOperationalFlow = parseBool(project.findProperty('lineageFailOnZeroOperationalFlow')
-                        ?: java.lang.System.getenv('LINEAGE_FAIL_ON_ZERO_OPERATIONAL_FLOW')
+                        ?: project.providers.environmentVariable('LINEAGE_FAIL_ON_ZERO_OPERATIONAL_FLOW').orNull
                         ?: 'false')
                 ['buss.vre.batch.xml', 'cons.vre.batch.xml'].each { appFileName ->
                     def appFile = project.file("${stitchRoot}/lineage/app/xml/${appFileName}")
@@ -545,7 +546,7 @@ class LineageConventionsPlugin implements Plugin<Project> {
         }
 
         def stitchedLineageFile = project.file("${stitchRoot}/stitched-lineage.xml")
-        project.tasks.register("carryAppXirToValidation", org.gradle.api.tasks.Copy) {
+        project.tasks.register("carryAppXirToValidation", copyTaskClass) {
             group = 'lineage'
             description = 'Carry per-processor app lineage artifacts from stitch phase.'
             dependsOn("stitchLineage")
@@ -825,9 +826,9 @@ class LineageConventionsPlugin implements Plugin<Project> {
                 ?: project.layout.buildDirectory.dir('lineage-uniform').get().asFile.absolutePath).toString()
         def buildRoot = (project.findProperty('buildRoot')
                 ?: project.findProperty('lineageBuildRoot')
-                ?: java.lang.System.getenv('LINEAGE_BUILD_ROOT')
+                ?: project.providers.environmentVariable('LINEAGE_BUILD_ROOT').orNull
                 ?: defaultBuildRoot).toString()
-        def skipValidations = parseBool(project.findProperty('skipLineageValidations') ?: java.lang.System.getenv('SKIP_LINEAGE_VALIDATIONS') ?: ext.skipLineageValidations)
+        def skipValidations = parseBool(project.findProperty('skipLineageValidations') ?: project.providers.environmentVariable('SKIP_LINEAGE_VALIDATIONS').orNull ?: ext.skipLineageValidations)
         def schemaNames = (ext.schemaNames ?: ['buss', 'cons', 'sdp', 'dsa', 'sdp_staging', 'dsa_staging']).collect { it.toString() }
         def architectureModelFile = (ext.architectureModelFile ?: "${sourceRoot}/architecture/vortex-archimate-risk.xml").toString()
         def architectureProcessedFile = (ext.architectureProcessedFile ?: "${buildRoot}/6.stitch/architecture/${new File(architectureModelFile).name}").toString()
@@ -930,7 +931,7 @@ class LineageConventionsPlugin implements Plugin<Project> {
                 doLast {
                     def repoDir = project.file(repo.directory.toString())
                     def updateExistingRepos = ((project.findProperty('lineageSyncUpdate')
-                            ?: System.getenv('LINEAGE_SYNC_UPDATE')
+                            ?: project.providers.environmentVariable('LINEAGE_SYNC_UPDATE').orNull
                             ?: 'false').toString().trim().toLowerCase()) in ['1', 'true', 'yes', 'y', 'on']
                     if (!repoDir.exists()) {
                         repoDir.parentFile.mkdirs()
