@@ -1,4 +1,4 @@
-package name.jurgenei.lineage
+package name.jurgenei.gradle.lineage
 
 class LineagePipelineExtension {
     String sourceRoot

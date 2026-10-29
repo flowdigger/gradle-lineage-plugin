@@ -4,8 +4,8 @@ plugins {
     id 'maven-publish'
 }
 
-group = 'name.jurgenei.lineage'
-version = '0.1.0-SNAPSHOT'
+group = 'name.jurgenei.gradle'
+version = '0.1.0'
 
 repositories {
     gradlePluginPortal()
@@ -16,7 +16,7 @@ gradlePlugin {
     plugins {
         lineageConventions {
             id = 'name.jurgenei.gradle.lineage'
-            implementationClass = 'name.jurgenei.lineage.LineageConventionsPlugin'
+            implementationClass = 'name.jurgenei.gradle.lineage.LineageConventionsPlugin'
             displayName = 'Lineage pipeline conventions plugin'
             description = 'Externalized and parameterized conventions for the 1.parse..9.publish lineage pipeline.'
         }

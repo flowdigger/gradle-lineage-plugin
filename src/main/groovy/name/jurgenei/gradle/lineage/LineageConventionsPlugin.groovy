@@ -1,4 +1,4 @@
-package name.jurgenei.lineage
+package name.jurgenei.gradle.lineage
 
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
@@ -23,7 +23,12 @@ class LineageConventionsPlugin implements Plugin<Project> {
 
         def ext = project.extensions.create('lineagePipeline', LineagePipelineExtension)
         ext.sourceRoot = project.rootProject.projectDir.parentFile.absolutePath
-        ext.lineageBuildRoot = project.rootProject.file('../../build/lineage-uniform').absolutePath
+        ext.lineageBuildRoot = (
+                project.findProperty('buildRoot')
+                        ?: project.findProperty('lineageBuildRoot')
+                        ?: java.lang.System.getenv('LINEAGE_BUILD_ROOT')
+                        ?: project.layout.buildDirectory.dir('lineage-uniform').get().asFile.absolutePath
+        ).toString()
         project.rootProject.ext.resolveLineageConfig = { ->
             resolveLineageConfig(project, ext)
         }
@@ -47,12 +52,12 @@ class LineageConventionsPlugin implements Plugin<Project> {
             project.pluginManager.apply('name.jurgenei.gradle.antlr.java')
         }
 
-        def xmlAstPlsqlTaskClass = Class.forName('name.jurgenei.gradle.antlr.XmlAstPlsqlGradleTask')
-        def xmlAstJavaTaskClass = Class.forName('name.jurgenei.gradle.antlr.XmlAstJavaGradleTask')
-        def xsltTaskClass = Class.forName('name.jurgenei.gradle.xml.XsltTask')
-        def schematronTaskClass = Class.forName('name.jurgenei.gradle.xml.SchematronTask')
-        def ooxmlTaskClass = Class.forName('name.jurgenei.gradle.ooxml.OoXmlToCanonicalTask')
-        def pythonRunnerTaskClass = Class.forName('name.jurgenei.gradle.python.PythonRunnerTask')
+        def xmlAstPlsqlTaskClass = LineageConventionsPlugin.classLoader.loadClass('name.jurgenei.gradle.antlr.XmlAstPlsqlGradleTask')
+        def xmlAstJavaTaskClass = LineageConventionsPlugin.classLoader.loadClass('name.jurgenei.gradle.antlr.XmlAstJavaGradleTask')
+        def xsltTaskClass = LineageConventionsPlugin.classLoader.loadClass('name.jurgenei.gradle.xml.XsltTask')
+        def schematronTaskClass = LineageConventionsPlugin.classLoader.loadClass('name.jurgenei.gradle.xml.SchematronTask')
+        def ooxmlTaskClass = LineageConventionsPlugin.classLoader.loadClass('name.jurgenei.gradle.ooxml.OoXmlToCanonicalTask')
+        def pythonRunnerTaskClass = LineageConventionsPlugin.classLoader.loadClass('name.jurgenei.gradle.python.PythonRunnerTask')
 
         def toTaskSuffix = { String key ->
             key.split(/[^A-Za-z0-9]+/)
@@ -69,7 +74,7 @@ class LineageConventionsPlugin implements Plugin<Project> {
         }
         def includedPluginBuild = project.gradle.includedBuilds.find { it.name == 'gradle-lineage-plugin' }
         def pipelineRoot = (project.findProperty('lineagePluginPipelineRoot')
-                ?: System.getenv('LINEAGE_PLUGIN_PIPELINE_ROOT')
+                ?: java.lang.System.getenv('LINEAGE_PLUGIN_PIPELINE_ROOT')
                 ?: (includedPluginBuild != null ? new File(includedPluginBuild.projectDir, 'pipeline').absolutePath : "${project.rootProject.projectDir}/build-logic/pipeline"))
                 .toString()
         def toCollectionUri = { String dirPath, String selectPattern ->
@@ -493,7 +498,7 @@ class LineageConventionsPlugin implements Plugin<Project> {
             onlyIf { !cfg.skipValidations && cfg.javaEnabled }
             doLast {
                 def failOnZeroOperationalFlow = parseBool(project.findProperty('lineageFailOnZeroOperationalFlow')
-                        ?: System.getenv('LINEAGE_FAIL_ON_ZERO_OPERATIONAL_FLOW')
+                        ?: java.lang.System.getenv('LINEAGE_FAIL_ON_ZERO_OPERATIONAL_FLOW')
                         ?: 'false')
                 ['buss.vre.batch.xml', 'cons.vre.batch.xml'].each { appFileName ->
                     def appFile = project.file("${stitchRoot}/lineage/app/xml/${appFileName}")
@@ -545,7 +550,7 @@ class LineageConventionsPlugin implements Plugin<Project> {
         }
 
         def stitchedLineageFile = project.file("${stitchRoot}/stitched-lineage.xml")
-        project.tasks.register("carryAppXirToValidation", Copy) {
+        project.tasks.register("carryAppXirToValidation", org.gradle.api.tasks.Copy) {
             group = 'lineage'
             description = 'Carry per-processor app lineage artifacts from stitch phase.'
             dependsOn("stitchLineage")
@@ -821,9 +826,13 @@ class LineageConventionsPlugin implements Plugin<Project> {
             s in ['1', 'true', 'yes', 'y', 'on']
         }
         def sourceRoot = (ext.sourceRoot ?: project.rootProject.projectDir.parentFile.absolutePath).toString()
-        def defaultBuildRoot = (ext.lineageBuildRoot ?: project.rootProject.file('../../build/lineage-uniform').absolutePath).toString()
-        def buildRoot = (project.findProperty('lineageBuildRoot') ?: defaultBuildRoot).toString()
-        def skipValidations = parseBool(project.findProperty('skipLineageValidations') ?: System.getenv('SKIP_LINEAGE_VALIDATIONS') ?: ext.skipLineageValidations)
+        def defaultBuildRoot = (ext.lineageBuildRoot
+                ?: project.layout.buildDirectory.dir('lineage-uniform').get().asFile.absolutePath).toString()
+        def buildRoot = (project.findProperty('buildRoot')
+                ?: project.findProperty('lineageBuildRoot')
+                ?: java.lang.System.getenv('LINEAGE_BUILD_ROOT')
+                ?: defaultBuildRoot).toString()
+        def skipValidations = parseBool(project.findProperty('skipLineageValidations') ?: java.lang.System.getenv('SKIP_LINEAGE_VALIDATIONS') ?: ext.skipLineageValidations)
         def schemaNames = (ext.schemaNames ?: ['buss', 'cons', 'sdp', 'dsa', 'sdp_staging', 'dsa_staging']).collect { it.toString() }
         def architectureModelFile = (ext.architectureModelFile ?: "${sourceRoot}/architecture/vortex-archimate-risk.xml").toString()
         def architectureProcessedFile = (ext.architectureProcessedFile ?: "${buildRoot}/6.stitch/architecture/${new File(architectureModelFile).name}").toString()
