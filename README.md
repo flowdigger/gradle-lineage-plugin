@@ -75,20 +75,16 @@ lineagePipeline {
 
   repos {
     repo {
-      uri.set("https://dev.azure.com/IngEurCDaaS01/IngOne/_git/P01744-vortex-oracle-application")
-      ref.set("master")
-      sourceSet('vortex-sql') {
+      uri.set("https://github.com/jurgenei/example-lineage-plsql")
+      ref.set("main")
+      sourceSet('sql') {
         parserPlugin.set("name.jurgenei.gradle.antlr.plsql")
-        sourceDirectory.set(file('oracle'))
+        sourceDirectory.set(file('src/main/sql'))
         includes.set(["{buss,cons,sdp,dsa,sdp_staging,dsa_staging}/{views,procedures,package_bodies}/**.sql"])
       }
-    }
-    repo {
-      uri.set("https://dev.azure.com/IngEurCDaaS01/IngOne/_git/P01744-vortex-vxjtl")
-      ref.set("master")
-      sourceSet('vxjtl') {
+      sourceSet('java') {
         parserPlugin.set("name.jurgenei.gradle.antlr.java")
-        sourceDirectory.set(file('src/main'))
+        sourceDirectory.set(file('src/main/java'))
         includes.set(["**/*.java"])
       }
     }
