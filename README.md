@@ -80,7 +80,7 @@ lineagePipeline {
       sourceSet('sql') {
         parserPlugin.set("name.jurgenei.gradle.antlr.plsql")
         sourceDirectory.set(file('src/main/sql'))
-        includes.set(["{buss,cons,sdp,dsa,sdp_staging,dsa_staging}/{views,procedures,package_bodies}/**.sql"])
+        includes.set(["{views,procedures,package_bodies}/**.sql"])
       }
       sourceSet('java') {
         parserPlugin.set("name.jurgenei.gradle.antlr.java")
