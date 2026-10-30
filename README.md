@@ -38,6 +38,17 @@ Plugin wires deterministic lifecycle that:
 8. exports GraphML/RDF/JSON (+ graph layout)
 9. publishes artifacts
 
+Internal wiring now split by responsibility:
+- `LineageConventionsPlugin`: root-only apply + orchestration
+- `LineageConfigResolver`: extension + property/env resolution and source-set validation
+- `LineageRepoSyncTasks`: `syncLineageRepo*` and `syncLineageRepos`
+- `LineagePipelineTasks`: phase-grouped task registration (`1.parse` .. `9.publish`)
+- `LineageGlobalTasks`: `clean`, `cleanAllLineage`, and `build -> publishLineage`
+
+Sanity coverage:
+- Gradle TestKit task-graph and clean-behavior tests
+- XML smoke tests using `gradle-xml-plugin` XSpec/Schematron tasks for representative pipeline assets
+
 Default output root:
 
 ```text
