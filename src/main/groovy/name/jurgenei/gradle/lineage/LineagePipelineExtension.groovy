@@ -7,6 +7,7 @@ class LineagePipelineExtension {
     List<String> schemaNames = ['buss', 'cons', 'sdp', 'dsa', 'sdp_staging', 'dsa_staging']
     String architectureModelFile
     String architectureProcessedFile
+    String appSticherStylesheet
 
     final ReposConfig repos = new ReposConfig()
 

@@ -81,23 +81,25 @@ plugins {
 Minimal example:
 
 ```groovy
+
+
 lineagePipeline {
   sourceRoot = rootProject.projectDir.parentFile.absolutePath
-  lineageBuildRoot = rootProject.file('../../build/lineage-uniform').absolutePath
-  architectureModelFile = "${sourceRoot}/architecture/vortex-archimate-risk.xml"
+  lineageBuildRoot = rootProject.file('build/lineage').absolutePath
+  architectureModelFile = "${sourceRoot}/src/test/archimate-model.xml"
 
   repos {
     repo {
-      uri.set("https://github.com/jurgenei/example-lineage-plsql")
+      uri.set("https://github.com/jurgenei/gradle-lineage-plugin")
       ref.set("main")
       sourceSet('sql') {
         parserPlugin.set("name.jurgenei.gradle.antlr.plsql")
-        sourceDirectory.set(file('src/main/sql'))
-        includes.set(["{views,procedures,package_bodies}/**.sql"])
+        sourceDirectory.set(file('src/test/sql'))
+        includes.set(["**/*.sql"])
       }
       sourceSet('java') {
         parserPlugin.set("name.jurgenei.gradle.antlr.java")
-        sourceDirectory.set(file('src/main/java'))
+        sourceDirectory.set(file('src/test/java'))
         includes.set(["**/*.java"])
       }
     }
@@ -106,6 +108,11 @@ lineagePipeline {
   // Optional:
   // architectureProcessedFile defaults to:
   // "${lineageBuildRoot}/6.stitch/architecture/<architectureModelFile basename>"
+  //
+  // appSticherStylesheet defaults to bundled plugin stylesheet:
+  // "<plugin pipeline root>/6.stitch/src/main/xsl/call-app.xsl"
+  // Override when setup needs custom stitching logic:
+  // appSticherStylesheet = rootProject.file('lineage/call-app.custom.xsl').absolutePath
 }
 ```
 

@@ -5,6 +5,7 @@ import org.gradle.api.GradleException
 class Step6StitchTasksRegistrar {
     static void register(def ctx) {
         def stepRoot = ctx.project.findProject(':pipeline:step6-stitch')?.projectDir?.absolutePath ?: "${ctx.pipelineRoot}/6.stitch"
+        def appSticherStylesheet = (ctx.cfg.appSticherStylesheet ?: "${stepRoot}/src/main/xsl/call-app.xsl").toString()
         def architectureModelFile = ctx.cfg.architectureModelFile.toString()
         def architectureProcessedFile = ctx.cfg.architectureProcessedFile.toString()
         ctx.project.tasks.register("stageStitchInputs") {
@@ -60,10 +61,13 @@ class Step6StitchTasksRegistrar {
             description = 'Generate stitched application artifacts using architecture + configuration glue.'
             dependsOn("verifyCallAppSqlInputs")
             doFirst {
+                if (!ctx.project.file(appSticherStylesheet).exists()) {
+                    throw new GradleException("App stitcher stylesheet not found: ${appSticherStylesheet}")
+                }
                 ctx.project.delete(architectureProcessedFile)
             }
             input architectureModelFile
-            style "${stepRoot}/src/main/xsl/call-app.xsl"
+            style appSticherStylesheet
             output architectureProcessedFile
             param 'work-uri', ctx.project.file(ctx.stitchRoot).toURI().toString()
         }

@@ -66,6 +66,39 @@ class LineagePluginSanityTest {
         assertFalse(new File(buildRoot, '9.publish').exists(), "9.publish must be removed")
     }
 
+    @Test
+    void "accepts configured appSticherStylesheet override path"() {
+        writeSettingsWithBuilds(testProjectDir)
+        def customStylesheet = new File(testProjectDir, 'lineage/call-app.custom.xsl')
+        customStylesheet.parentFile.mkdirs()
+        customStylesheet.text = """
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="3.0">
+  <xsl:template match="/">
+    <ok/>
+  </xsl:template>
+</xsl:stylesheet>
+""".stripIndent()
+        writeLineageBuild(testProjectDir, customStylesheet.absolutePath)
+
+        def result = runner(testProjectDir)
+                .withArguments('tasks', '--all')
+                .build()
+
+        assertTrue(result.output.contains('publishLineage'))
+    }
+
+    @Test
+    void "fails fast on missing appSticherStylesheet override path"() {
+        writeSettingsWithBuilds(testProjectDir)
+        writeLineageBuild(testProjectDir, new File(testProjectDir, 'missing/call-app.xsl').absolutePath)
+
+        def result = runner(testProjectDir)
+                .withArguments('tasks', '--all')
+                .buildAndFail()
+
+        assertTrue(result.output.contains('Configured appSticherStylesheet does not exist'))
+    }
+
     private static GradleRunner runner(File projectDir) {
         GradleRunner.create()
                 .withProjectDir(projectDir)
@@ -93,8 +126,10 @@ rootProject.name = 'lineage-plugin-sanity'
 """.stripIndent()
     }
 
-    private static void writeLineageBuild(File projectDir) {
+    private static void writeLineageBuild(File projectDir, String appSticherStylesheet = null) {
         def pipelineRoot = new File(System.getProperty('user.dir'), 'pipeline').absolutePath.replace('\\', '\\\\')
+        def escapedOverridePath = appSticherStylesheet != null ? appSticherStylesheet.replace('\\', '\\\\') : null
+        def optionalOverrideBlock = escapedOverridePath != null ? "  appSticherStylesheet = '${escapedOverridePath}'\n" : ""
         new File(projectDir, 'build.gradle').text = """
 plugins {
   id 'base'
@@ -111,6 +146,7 @@ ext.set('lineagePluginPipelineRoot', '${pipelineRoot}')
 lineagePipeline {
   sourceRoot = rootProject.projectDir.absolutePath
   lineageBuildRoot = rootProject.file('lineage-uniform').absolutePath
+${optionalOverrideBlock}
   repos {
     repo {
       uri.set('https://github.com/example/demo-lineage.git')

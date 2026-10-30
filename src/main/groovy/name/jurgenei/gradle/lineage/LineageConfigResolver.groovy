@@ -22,6 +22,14 @@ class LineageConfigResolver {
         def schemaNames = (ext.schemaNames ?: ['buss', 'cons', 'sdp', 'dsa', 'sdp_staging', 'dsa_staging']).collect { it.toString() }
         def architectureModelFile = (ext.architectureModelFile ?: "${sourceRoot}/architecture/vortex-archimate-risk.xml").toString()
         def architectureProcessedFile = (ext.architectureProcessedFile ?: "${buildRoot}/6.stitch/architecture/${new File(architectureModelFile).name}").toString()
+        def appSticherStylesheet = normalizeOptionalFilePath(project,
+                project.findProperty('appSticherStylesheet')
+                        ?: project.providers.environmentVariable('APP_STICHER_STYLESHEET').orNull
+                        ?: ext.appSticherStylesheet,
+                'appSticherStylesheet')
+        if (appSticherStylesheet != null && !new File(appSticherStylesheet).exists()) {
+            throw new GradleException("Configured appSticherStylesheet does not exist: ${appSticherStylesheet}")
+        }
         def repos = ext.repos.items ?: []
         if (repos.isEmpty()) {
             throw new GradleException("lineagePipeline.repos must contain at least one repo { ... } entry.")
@@ -107,7 +115,8 @@ class LineageConfigResolver {
                 javaEnabled: !javaSourceSets.isEmpty(),
                 javaSourceSetNames: javaSourceSets.collect { it.name },
                 architectureModelFile: architectureModelFile,
-                architectureProcessedFile: architectureProcessedFile
+                architectureProcessedFile: architectureProcessedFile,
+                appSticherStylesheet: appSticherStylesheet
         ]
     }
 
@@ -142,6 +151,24 @@ class LineageConfigResolver {
             throw new GradleException("sourceDirectory value cannot be blank.")
         }
         return text
+    }
+
+    private static String normalizeOptionalFilePath(Project project, Object rawPath, String label) {
+        if (rawPath == null) {
+            return null
+        }
+        if (rawPath instanceof File) {
+            return (rawPath as File).absolutePath
+        }
+        def text = rawPath.toString().trim()
+        if (text.isEmpty()) {
+            return null
+        }
+        try {
+            return project.file(text).absolutePath
+        } catch (Exception ex) {
+            throw new GradleException("Invalid ${label} path '${text}': ${ex.message}", ex)
+        }
     }
 
     private static String deriveRepoName(String repoUri) {
