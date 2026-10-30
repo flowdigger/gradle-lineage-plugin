@@ -30,50 +30,18 @@ lineagePipeline {
 
     repos {
         repo {
-            uri.set("https://github.com/jurgenei/java-plsql")
-            ref.set("november")
+            uri.set("https://github.com/jurgenei/gradle-lineage-plugin")
+            ref.set("september")
             sourceSet('sql') {
                 parserPlugin.set("name.jurgenei.gradle.antlr.plsql")
-                sourceDirectory.set(file('src/main/sql'))
+                sourceDirectory.set(file('samples/java-plsql/src/main/sql'))
                 includes.set(["**/*.sql"])
             }
             sourceSet('java') {
                 parserPlugin.set("name.jurgenei.gradle.antlr.java")
-                sourceDirectory.set(file('src/main/java'))
+                sourceDirectory.set(file('samples/java-plsql/src/main/java'))
                 includes.set(["**/*.java"])
             }
         }
     }
-}
-
-tasks.matching { it.name in ['ooxmlToCanonical', 'fdToCanonical', 'ooxmlTablesToXir'] }.configureEach {
-    enabled = false
-}
-
-tasks.matching { it.name.startsWith('syncLineageRepo') }.configureEach {
-    enabled = false
-}
-
-tasks.register('prepareSampleSqlSchemaFolders') {
-    dependsOn('observeSqlSql')
-    doLast {
-        def observedSqlFile = file("${gSampleLineageBuildRoot}/2.observe/sql/sql/customer.xir")
-        if (!observedSqlFile.exists()) {
-            throw new org.gradle.api.GradleException("Observed SQL file missing: ${observedSqlFile}")
-        }
-        ['buss', 'cons', 'sdp', 'dsa', 'sdp_staging', 'dsa_staging'].each { schema ->
-            copy {
-                from(observedSqlFile)
-                into(file("${gSampleLineageBuildRoot}/2.observe/sql/sql/${schema}/procedures"))
-            }
-        }
-    }
-}
-
-tasks.matching {
-    it.name.startsWith('sqlTableIndex') ||
-            it.name.startsWith('sqlProcedureIndex') ||
-            it.name.startsWith('sqlCallTreeIndex')
-}.configureEach {
-    dependsOn('prepareSampleSqlSchemaFolders')
 }
