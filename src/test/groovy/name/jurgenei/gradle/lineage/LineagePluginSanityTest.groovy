@@ -10,6 +10,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse
 import static org.junit.jupiter.api.Assertions.assertTrue
 
 class LineagePluginSanityTest {
+    private static final String XML_PLUGIN_VERSION = '0.1.15'
+    private static final String OOXML_PLUGIN_VERSION = '0.1.12'
+    private static final String PYTHON_PLUGIN_VERSION = '0.1.4'
+    private static final String ANTLR_JAVA_PLUGIN_VERSION = '0.1.4'
+    private static final String ANTLR_PLSQL_PLUGIN_VERSION = '0.1.8'
+
     @TempDir
     File testProjectDir
 
@@ -107,21 +113,7 @@ class LineagePluginSanityTest {
     }
 
     private static void writeSettingsWithBuilds(File projectDir) {
-        def gradleRoot = new File(System.getProperty('user.dir')).parentFile
-        def xmlBuild = new File(gradleRoot, 'gradle-xml-plugin').absolutePath.replace('\\', '\\\\')
-        def ooxmlBuild = new File(gradleRoot, 'gradle-ooxml-plugin').absolutePath.replace('\\', '\\\\')
-        def pythonBuild = new File(gradleRoot, 'gradle-python-plugin').absolutePath.replace('\\', '\\\\')
-        def antlrJavaBuild = new File(gradleRoot, 'gradle-antlr-java-plugin').absolutePath.replace('\\', '\\\\')
-        def antlrPlsqlBuild = new File(gradleRoot, 'gradle-antlr-plsql-plugin').absolutePath.replace('\\', '\\\\')
         new File(projectDir, 'settings.gradle').text = """
-pluginManagement {
-  includeBuild('${xmlBuild}')
-  includeBuild('${ooxmlBuild}')
-  includeBuild('${pythonBuild}')
-  includeBuild('${antlrJavaBuild}')
-  includeBuild('${antlrPlsqlBuild}')
-}
-
 rootProject.name = 'lineage-plugin-sanity'
 """.stripIndent()
     }
@@ -133,11 +125,11 @@ rootProject.name = 'lineage-plugin-sanity'
         new File(projectDir, 'build.gradle').text = """
 plugins {
   id 'base'
-  id 'name.jurgenei.gradle.xml' apply false
-  id 'name.jurgenei.gradle.ooxml' apply false
-  id 'name.jurgenei.gradle.python' apply false
-  id 'name.jurgenei.gradle.antlr.java' apply false
-  id 'name.jurgenei.gradle.antlr.plsql' apply false
+  id 'name.jurgenei.gradle.xml' version '${XML_PLUGIN_VERSION}' apply false
+  id 'name.jurgenei.gradle.ooxml' version '${OOXML_PLUGIN_VERSION}' apply false
+  id 'name.jurgenei.gradle.python' version '${PYTHON_PLUGIN_VERSION}' apply false
+  id 'name.jurgenei.gradle.antlr.java' version '${ANTLR_JAVA_PLUGIN_VERSION}' apply false
+  id 'name.jurgenei.gradle.antlr.plsql' version '${ANTLR_PLSQL_PLUGIN_VERSION}' apply false
   id 'name.jurgenei.gradle.lineage'
 }
 
