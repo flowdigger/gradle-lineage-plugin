@@ -1,1 +1,28 @@
 rootProject.name = "lineage-build-logic"
+
+include(":pipeline:step1-parse")
+project(":pipeline:step1-parse").projectDir = file("pipeline/1.parse")
+
+include(":pipeline:step2-observe")
+project(":pipeline:step2-observe").projectDir = file("pipeline/2.observe")
+
+include(":pipeline:step3-direct-flow")
+project(":pipeline:step3-direct-flow").projectDir = file("pipeline/3.direct-flow")
+
+include(":pipeline:step4-validate-direct-flow")
+project(":pipeline:step4-validate-direct-flow").projectDir = file("pipeline/4.validate-direct-flow")
+
+include(":pipeline:step5-merge")
+project(":pipeline:step5-merge").projectDir = file("pipeline/5.merge")
+
+include(":pipeline:step6-stitch")
+project(":pipeline:step6-stitch").projectDir = file("pipeline/6.stitch")
+
+include(":pipeline:step7-validate-lineage")
+project(":pipeline:step7-validate-lineage").projectDir = file("pipeline/7.validate-lineage")
+
+include(":pipeline:step8-export")
+project(":pipeline:step8-export").projectDir = file("pipeline/8.export")
+
+include(":pipeline:step9-publish")
+project(":pipeline:step9-publish").projectDir = file("pipeline/9.publish")

@@ -42,7 +42,9 @@ Internal wiring now split by responsibility:
 - `LineageConventionsPlugin`: root-only apply + orchestration
 - `LineageConfigResolver`: extension + property/env resolution and source-set validation
 - `LineageRepoSyncTasks`: `syncLineageRepo*` and `syncLineageRepos`
-- `LineagePipelineTasks`: phase-grouped task registration (`1.parse` .. `9.publish`)
+- `LineagePipelineTasks`: phase orchestration only
+- `LineagePipelineContext`: shared resolved phase context
+- `pipeline/{1.parse..9.publish}`: multi-project phase modules, each with own `build.gradle` + `src/main` resources and registrar code
 - `LineageGlobalTasks`: `clean`, `cleanAllLineage`, and `build -> publishLineage`
 
 Sanity coverage:
