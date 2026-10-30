@@ -8,6 +8,8 @@ import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 import static org.junit.jupiter.api.Assertions.assertEquals
 
 class LineagePipelineXmlSmokeTest {
+    private static final String XML_PLUGIN_VERSION = '0.1.15'
+
     @TempDir
     File testProjectDir
 
@@ -45,15 +47,8 @@ class LineagePipelineXmlSmokeTest {
     }
 
     private static void writeSettings(File projectDir) {
-        def gradleRoot = new File(System.getProperty('user.dir')).parentFile
-        def xmlBuild = new File(gradleRoot, 'gradle-xml-plugin').absolutePath.replace('\\', '\\\\')
         new File(projectDir, 'settings.gradle').text = """
-pluginManagement {
-  includeBuild('${xmlBuild}')
-}
-
 rootProject.name = 'lineage-xml-smoke'
-includeBuild('${xmlBuild}')
 """.stripIndent()
     }
 
@@ -61,7 +56,7 @@ includeBuild('${xmlBuild}')
         def pluginRoot = new File(System.getProperty('user.dir'))
         new File(projectDir, 'build.gradle').text = """
 plugins {
-  id 'name.jurgenei.gradle.xml'
+  id 'name.jurgenei.gradle.xml' version '${XML_PLUGIN_VERSION}'
 }
 
 tasks.register('runXSpecSmoke', name.jurgenei.gradle.xml.XSpecTask) {
@@ -90,7 +85,7 @@ ext.pipelineRoot = '${new File(pluginRoot, 'pipeline').absolutePath.replace('\\'
     private static void writeSchematronBuild(File projectDir) {
         new File(projectDir, 'build.gradle').text = """
 plugins {
-  id 'name.jurgenei.gradle.xml'
+  id 'name.jurgenei.gradle.xml' version '${XML_PLUGIN_VERSION}'
 }
 
 tasks.register('runSchematronSmoke', name.jurgenei.gradle.xml.SchematronTask) {

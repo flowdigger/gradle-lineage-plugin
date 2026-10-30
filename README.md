@@ -1,5 +1,21 @@
 # Gradle Lineage Plugin (`name.jurgenei.gradle.lineage`)
 
+![Conformance](https://img.shields.io/badge/Conformance-Check--All%20Passing-brightgreen)
+
+[![Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/name.jurgenei.gradle.lineage?label=Plugin%20Portal)](https://plugins.gradle.org/plugin/name.jurgenei.gradle.lineage)
+[![Build and Test](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/gradle-build.yml/badge.svg)](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/gradle-build.yml)
+[![JUnit Report](https://img.shields.io/badge/JUnit-Report-blue?logo=githubactions)](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/gradle-build.yml)
+[![Coverage CI](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/coverage.yml/badge.svg)](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/coverage.yml)
+[![CodeQL](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/codeql.yml/badge.svg)](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/codeql.yml)
+[![Dependency Check](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/dependency-check.yml/badge.svg)](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/dependency-check.yml)
+[![SpotBugs Security](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/spotbugs-security.yml/badge.svg)](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/spotbugs-security.yml)
+[![Checkstyle](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/checkstyle.yml/badge.svg)](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/checkstyle.yml)
+[![Dependabot](https://img.shields.io/badge/dependabot-enabled-025E8C?logo=dependabot)](https://github.com/jurgenei/gradle-lineage-plugin/security/dependabot)
+[![Coverage](https://codecov.io/gh/jurgenei/gradle-lineage-plugin/graph/badge.svg?branch=main)](https://codecov.io/gh/jurgenei/gradle-lineage-plugin)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Java](https://img.shields.io/badge/java-21+-green.svg)](https://www.oracle.com/java/)
+[![Gradle](https://img.shields.io/badge/gradle-9.5+-blue.svg)](https://gradle.org/)
+
 Canonical lineage pipeline plugin for SQL + Java repositories.
 
 Pipeline contract:
@@ -154,6 +170,14 @@ Task graph only:
 
 ```bash
 ./gradlew -m publishLineage
+```
+
+Publish plugin to Gradle Plugin Portal:
+
+```bash
+./gradlew publishToPluginPortal \
+  -Pgradle.publish.key=<key> \
+  -Pgradle.publish.secret=<secret>
 ```
 
 Skip validation guards (local diagnostics only):
