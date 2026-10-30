@@ -1,0 +1,20 @@
+name: checkstyle
+on:
+  push:
+    branches: ["main", "release/**"]
+  pull_request:
+    branches: ["main", "release/**"]
+jobs:
+  checkstyle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Run formatting gate
+        run: ./gradlew spotlessCheck --stacktrace

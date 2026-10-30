@@ -1,0 +1,62 @@
+name: Dependency Check
+
+on:
+  push:
+    branches: ["main", "release/**"]
+  pull_request:
+    branches: ["main", "release/**"]
+  workflow_dispatch:
+  schedule:
+    - cron: "27 2 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-check:
+    runs-on: ubuntu-latest
+    env:
+      NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Run OWASP Dependency-Check
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: ./gradlew dependencyCheckAnalyze --no-daemon --no-configuration-cache --stacktrace
+
+      - name: Upload Dependency-Check HTML report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: dependency-check-html
+          path: build/reports/dependency-check-report.html
+
+      - name: Upload Dependency-Check XML report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: dependency-check-xml
+          path: build/reports/dependency-check-report.xml
+
+      - name: Upload Dependency-Check JSON report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: dependency-check-json
+          path: build/reports/dependency-check-report.json
+
+      - name: Dependency-Check summary
+        if: always()
+        run: |
+          echo "### OWASP Dependency-Check" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Reports uploaded as workflow artifacts." >> "$GITHUB_STEP_SUMMARY"

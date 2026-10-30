@@ -1,57 +1,170 @@
 plugins {
-    id 'groovy-gradle-plugin'
-    id 'java-gradle-plugin'
-    id 'maven-publish'
+	id 'groovy-gradle-plugin'
+	id 'java-gradle-plugin'
+	id 'jacoco'
+	id 'maven-publish'
+	id 'com.gradle.plugin-publish' version '2.2.1'
+	id 'org.owasp.dependencycheck' version '13.0.0'
+	id 'com.github.spotbugs' version '6.5.13' apply false
+	id 'com.diffplug.spotless' version '8.10.4'
 }
 
 group = 'name.jurgenei.gradle'
 version = '0.1.0'
 
+def enableSpotbugs = gradle.startParameter.taskNames
+		.collect { it.toLowerCase() }
+		.any { it.contains('spotbugs') || it.endsWith('allsecuritychecks') }
+
+if (enableSpotbugs) {
+	apply plugin: 'com.github.spotbugs'
+}
+
 repositories {
-    gradlePluginPortal()
-    mavenCentral()
+	gradlePluginPortal()
+	mavenCentral()
+}
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+	withSourcesJar()
+	withJavadocJar()
 }
 
 subprojects {
-    apply plugin: 'groovy'
-    repositories {
-        gradlePluginPortal()
-        mavenCentral()
-    }
-    dependencies {
-        implementation gradleApi()
-        implementation localGroovy()
-    }
+	apply plugin: 'groovy'
+	repositories {
+		gradlePluginPortal()
+		mavenCentral()
+	}
+	dependencies {
+		implementation gradleApi()
+		implementation localGroovy()
+	}
 }
 
 dependencies {
-    implementation project(':pipeline:step1-parse')
-    implementation project(':pipeline:step2-observe')
-    implementation project(':pipeline:step3-direct-flow')
-    implementation project(':pipeline:step4-validate-direct-flow')
-    implementation project(':pipeline:step5-merge')
-    implementation project(':pipeline:step6-stitch')
-    implementation project(':pipeline:step7-validate-lineage')
-    implementation project(':pipeline:step8-export')
-    implementation project(':pipeline:step9-publish')
+	implementation project(':pipeline:step1-parse')
+	implementation project(':pipeline:step2-observe')
+	implementation project(':pipeline:step3-direct-flow')
+	implementation project(':pipeline:step4-validate-direct-flow')
+	implementation project(':pipeline:step5-merge')
+	implementation project(':pipeline:step6-stitch')
+	implementation project(':pipeline:step7-validate-lineage')
+	implementation project(':pipeline:step8-export')
+	implementation project(':pipeline:step9-publish')
 
-    testImplementation gradleTestKit()
-    testImplementation localGroovy()
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.2'
+	testImplementation gradleTestKit()
+	testImplementation localGroovy()
+	testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.2'
 }
 
 test {
-    useJUnitPlatform()
+	useJUnitPlatform()
+	finalizedBy tasks.named('jacocoTestReport')
+}
+
+jacoco {
+	toolVersion = '0.8.12'
+}
+
+tasks.named('jacocoTestReport') {
+	dependsOn tasks.named('test')
+	executionData(fileTree(layout.buildDirectory) {
+		include 'jacoco/*.exec'
+	})
+	reports {
+		xml.required = true
+		html.required = true
+		csv.required = false
+	}
+}
+
+tasks.register('coverage') {
+	group = 'verification'
+	description = 'Runs tests and generates JaCoCo coverage reports.'
+	dependsOn tasks.named('jacocoTestReport')
+}
+
+spotless {
+	def hasOriginMain = providers.exec {
+		commandLine 'git', 'show-ref', '--verify', '--quiet', 'refs/remotes/origin/main'
+		ignoreExitValue = true
+	}.result.get().exitValue == 0
+	ratchetFrom(hasOriginMain ? 'origin/main' : 'HEAD')
+
+	format('misc') {
+		target '*.gradle', '.gitattributes', '.gitignore'
+		trimTrailingWhitespace()
+		leadingSpacesToTabs()
+		endWithNewline()
+	}
+
+	groovyGradle {
+		target '*.gradle'
+		greclipse()
+	}
+}
+
+dependencyCheck {
+	formats = ['HTML', 'JSON', 'XML']
+	failBuildOnCVSS = 7.0f
+	skipConfigurations = ['spotbugs', 'spotbugsPlugins']
+
+	if (file('dependency-check-suppressions.xml').exists()) {
+		suppressionFile = file('dependency-check-suppressions.xml').absolutePath
+	}
+
+	nvd {
+		apiKey = providers.gradleProperty('org.owasp.dependencycheck.nvd.api.key').orNull
+				?: System.getenv('NVD_API_KEY')
+	}
+}
+
+plugins.withId('com.github.spotbugs') {
+	dependencies {
+		spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.14.0'
+	}
+
+	tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
+		ignoreFailures = providers.gradleProperty('spotbugsIgnoreFailures')
+				.map { it.toBoolean() }
+				.orElse(true)
+				.get()
+		effort = com.github.spotbugs.snom.Effort.DEFAULT
+		reportLevel = com.github.spotbugs.snom.Confidence.valueOf('MEDIUM')
+		reports.create('html').required = true
+		reports.create('xml').required = false
+	}
 }
 
 gradlePlugin {
-    plugins {
-        lineageConventions {
-            id = 'name.jurgenei.gradle.lineage'
-            implementationClass = 'name.jurgenei.gradle.lineage.LineageConventionsPlugin'
-            displayName = 'Lineage pipeline conventions plugin'
-            description = 'Externalized and parameterized conventions for the 1.parse..9.publish lineage pipeline.'
-        }
-    }
+	website = 'https://github.com/jurgenei/gradle-lineage-plugin'
+	vcsUrl = 'https://github.com/jurgenei/gradle-lineage-plugin.git'
+	plugins {
+		lineageConventions {
+			id = 'name.jurgenei.gradle.lineage'
+			implementationClass = 'name.jurgenei.gradle.lineage.LineageConventionsPlugin'
+			displayName = 'Lineage pipeline conventions plugin'
+			description = 'Externalized and parameterized conventions for the 1.parse..9.publish lineage pipeline.'
+			tags.set([
+				'lineage',
+				'sql',
+				'java',
+				'graphml',
+				'rdf',
+				'gradle-plugin',
+				'pipeline'
+			])
+		}
+	}
+}
+
+tasks.register('publishToPluginPortal') {
+	group = 'publishing'
+	description = 'Publishes plugin to Gradle Plugin Portal.'
+	dependsOn tasks.named('publishPlugins')
 }
