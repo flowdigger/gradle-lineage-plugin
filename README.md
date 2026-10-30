@@ -51,29 +51,6 @@ Sanity coverage:
 - Gradle TestKit task-graph and clean-behavior tests
 - XML smoke tests using `gradle-xml-plugin` XSpec/Schematron tasks for representative pipeline assets
 
-Default output root:
-
-```text
-../../../build/lineage-uniform
-```
-
-Override per run:
-
-```bash
-./gradlew -PlineageBuildRoot=/tmp/lineage-uniform build
-```
-
----
-
-## Apply plugin
-
-```groovy
-plugins {
-  id 'base'
-  id 'name.jurgenei.gradle.lineage'
-}
-```
-
 ---
 
 ## Configure `lineagePipeline`
@@ -82,38 +59,51 @@ Minimal example:
 
 ```groovy
 
+plugins {
+  id 'base'
+  id 'name.jurgenei.gradle.lineage' version '0.1.0'
+  id 'name.jurgenei.gradle.xml' version '0.1.15'
+  id 'name.jurgenei.gradle.antlr.plsql' version '0.1.8'
+  id 'name.jurgenei.gradle.antlr.java' version '0.1.4'
+  id 'name.jurgenei.gradle.ooxml' version '0.1.12' apply false
+  id 'name.jurgenei.gradle.python' version '0.1.4' apply false
+}
+
+repositories {
+  gradlePluginPortal()
+  mavenCentral()
+}
+
+def gSampleSourceRoot = rootProject.file('build/source').absolutePath
+def gSampleLineageBuildRoot = rootProject.file('build/lineage').absolutePath
+def gSampleArchitectureModelFile = rootProject.file('src/main/xml/architecture.xml').absolutePath
+
+println("Sample lineage build root: ${gSampleLineageBuildRoot}")
+println("Sample source root: ${gSampleSourceRoot}")
+println("Sample architecture model file: ${gSampleArchitectureModelFile}")
 
 lineagePipeline {
-  sourceRoot = rootProject.projectDir.parentFile.absolutePath
-  lineageBuildRoot = rootProject.file('build/lineage').absolutePath
-  architectureModelFile = "${sourceRoot}/src/test/archimate-model.xml"
+  sourceRoot = gSampleSourceRoot
+  lineageBuildRoot = gSampleLineageBuildRoot
+  architectureModelFile = gSampleArchitectureModelFile
+  skipLineageValidations = true
 
   repos {
     repo {
       uri.set("https://github.com/jurgenei/gradle-lineage-plugin")
-      // ref.set("main") // optional
-      sourceSet('sql') {
+      sourceSet('sql-sample') {
         parserPlugin.set("name.jurgenei.gradle.antlr.plsql")
-        sourceDirectory.set(file('src/test/sql'))
-        schemas.set('buss', 'cons', 'sdp', 'dsa') // optional; defaults to folder-derived names
+        sourceDirectory.set(file('samples/java-plsql/src/main/sql'))
+        schemas.set(['dsa'])
         includes.set(["**/*.sql"])
       }
-      sourceSet('java') {
+      sourceSet('java-sample') {
         parserPlugin.set("name.jurgenei.gradle.antlr.java")
-        sourceDirectory.set(file('src/test/java'))
+        sourceDirectory.set(file('samples/java-plsql/src/main/java'))
         includes.set(["**/*.java"])
       }
     }
   }
-
-  // Optional:
-  // architectureProcessedFile defaults to:
-  // "${lineageBuildRoot}/6.stitch/architecture/<architectureModelFile basename>"
-  //
-  // appSticherStylesheet defaults to bundled plugin stylesheet:
-  // "<plugin pipeline root>/6.stitch/src/main/xsl/call-app.xsl"
-  // Override when setup needs custom stitching logic:
-  // appSticherStylesheet = rootProject.file('lineage/call-app.custom.xsl').absolutePath
 }
 ```
 
