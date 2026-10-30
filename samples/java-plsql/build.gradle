@@ -1,0 +1,79 @@
+
+plugins {
+    id 'base'
+    id 'name.jurgenei.gradle.lineage'
+    id 'name.jurgenei.gradle.xml' version '0.1.15'
+    id 'name.jurgenei.gradle.antlr.plsql' version '0.1.8'
+    id 'name.jurgenei.gradle.antlr.java' version '0.1.4'
+    id 'name.jurgenei.gradle.ooxml' version '0.1.12' apply false
+    id 'name.jurgenei.gradle.python' version '0.1.4' apply false
+}
+
+repositories {
+    gradlePluginPortal()
+    mavenCentral()
+}
+
+def gSampleSourceRoot = rootProject.projectDir.parentFile.absolutePath
+def gSampleLineageBuildRoot = rootProject.file('build').absolutePath
+def gSampleArchitectureModelFile = rootProject.file('src/main/xml/architecture.xml').absolutePath
+
+println("Sample lineage build root: ${gSampleLineageBuildRoot}")
+println("Sample source root: ${gSampleSourceRoot}")
+println("Sample architecture model file: ${gSampleArchitectureModelFile}")
+
+lineagePipeline {
+    sourceRoot = gSampleSourceRoot
+    lineageBuildRoot = gSampleLineageBuildRoot
+    architectureModelFile = gSampleArchitectureModelFile
+    skipLineageValidations = true
+
+    repos {
+        repo {
+            uri.set("https://github.com/jurgenei/java-plsql")
+            ref.set("november")
+            sourceSet('sql') {
+                parserPlugin.set("name.jurgenei.gradle.antlr.plsql")
+                sourceDirectory.set(file('src/main/sql'))
+                includes.set(["**/*.sql"])
+            }
+            sourceSet('java') {
+                parserPlugin.set("name.jurgenei.gradle.antlr.java")
+                sourceDirectory.set(file('src/main/java'))
+                includes.set(["**/*.java"])
+            }
+        }
+    }
+}
+
+tasks.matching { it.name in ['ooxmlToCanonical', 'fdToCanonical', 'ooxmlTablesToXir'] }.configureEach {
+    enabled = false
+}
+
+tasks.matching { it.name.startsWith('syncLineageRepo') }.configureEach {
+    enabled = false
+}
+
+tasks.register('prepareSampleSqlSchemaFolders') {
+    dependsOn('observeSqlSql')
+    doLast {
+        def observedSqlFile = file("${gSampleLineageBuildRoot}/2.observe/sql/sql/customer.xir")
+        if (!observedSqlFile.exists()) {
+            throw new org.gradle.api.GradleException("Observed SQL file missing: ${observedSqlFile}")
+        }
+        ['buss', 'cons', 'sdp', 'dsa', 'sdp_staging', 'dsa_staging'].each { schema ->
+            copy {
+                from(observedSqlFile)
+                into(file("${gSampleLineageBuildRoot}/2.observe/sql/sql/${schema}/procedures"))
+            }
+        }
+    }
+}
+
+tasks.matching {
+    it.name.startsWith('sqlTableIndex') ||
+            it.name.startsWith('sqlProcedureIndex') ||
+            it.name.startsWith('sqlCallTreeIndex')
+}.configureEach {
+    dependsOn('prepareSampleSqlSchemaFolders')
+}
