@@ -55,6 +55,7 @@ class Step2ObserveTasksRegistrar {
         ctx.project.tasks.named('ooxmlToCanonical') {
             group = 'lineage'
             description = 'Observe OOXML documents under docs/active.'
+            def activeDocsRoot = ctx.project.file("${ctx.cfg.sourceRoot}/docs/active")
             source(ctx.project.fileTree("${ctx.cfg.sourceRoot}/docs/active") {
                 include '**/*.docx', '**/*.pptx', '**/*.xlsx'
                 exclude '**/~$*'
@@ -62,11 +63,18 @@ class Step2ObserveTasksRegistrar {
             outputDirectory.set(ctx.project.file("${ctx.observeRoot}/ooxml/active"))
             targetExtension.set('.xml')
             legacyXmlOutput.set(true)
+            onlyIf {
+                activeDocsRoot.exists() && !(ctx.project.fileTree(activeDocsRoot) {
+                    include '**/*.docx', '**/*.pptx', '**/*.xlsx'
+                    exclude '**/~$*'
+                }).isEmpty()
+            }
         }
 
         ctx.project.tasks.register('fdToCanonical', ctx.ooxmlTaskClass) {
             group = 'lineage'
             description = 'Observe functional-design OOXML documents under docs/fd.'
+            def functionalDesignRoot = ctx.project.file("${ctx.cfg.sourceRoot}/docs/fd")
             source(ctx.project.fileTree("${ctx.cfg.sourceRoot}/docs/fd") {
                 include '**/*.docx', '**/*.pptx', '**/*.xlsx'
                 exclude '**/~$*'
@@ -74,12 +82,19 @@ class Step2ObserveTasksRegistrar {
             outputDirectory.set(ctx.project.file("${ctx.observeRoot}/ooxml/fd"))
             targetExtension.set('.xir')
             legacyXmlOutput.set(true)
+            onlyIf {
+                functionalDesignRoot.exists() && !(ctx.project.fileTree(functionalDesignRoot) {
+                    include '**/*.docx', '**/*.pptx', '**/*.xlsx'
+                    exclude '**/~$*'
+                }).isEmpty()
+            }
         }
 
         ctx.project.tasks.register("ooxmlTablesToXir", ctx.xsltTaskClass) {
             group = 'lineage'
             description = 'Translate canonical OOXML tables to XIR objects.'
             dependsOn('ooxmlToCanonical')
+            def canonicalOoxmlRoot = ctx.project.file("${ctx.observeRoot}/ooxml/active")
             style("${stepRoot}/src/main/xsl/table2objects.xsl")
             source(ctx.project.fileTree("${ctx.observeRoot}/ooxml/active") {
                 include("**/*.xml")
@@ -87,6 +102,11 @@ class Step2ObserveTasksRegistrar {
             outputDir.set(ctx.project.file("${ctx.observeRoot}/ooxml/fd"))
             outputExtension.set('.xir')
             outputFormat.set('beautified')
+            onlyIf {
+                canonicalOoxmlRoot.exists() && !(ctx.project.fileTree(canonicalOoxmlRoot) {
+                    include '**/*.xml'
+                }).isEmpty()
+            }
         }
 
         ctx.project.tasks.register("extractLineageObservations") {

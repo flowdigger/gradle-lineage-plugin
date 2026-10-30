@@ -14,8 +14,8 @@ repositories {
     mavenCentral()
 }
 
-def gSampleSourceRoot = rootProject.projectDir.parentFile.absolutePath
-def gSampleLineageBuildRoot = rootProject.file('build').absolutePath
+def gSampleSourceRoot = rootProject.file('build/source').absolutePath
+def gSampleLineageBuildRoot = rootProject.file('build/lineage').absolutePath
 def gSampleArchitectureModelFile = rootProject.file('src/main/xml/architecture.xml').absolutePath
 
 println("Sample lineage build root: ${gSampleLineageBuildRoot}")
@@ -31,13 +31,13 @@ lineagePipeline {
     repos {
         repo {
             uri.set("https://github.com/jurgenei/gradle-lineage-plugin")
-            ref.set("september")
-            sourceSet('sql') {
+            ref.set("november")
+            sourceSet('sql-sample') {
                 parserPlugin.set("name.jurgenei.gradle.antlr.plsql")
                 sourceDirectory.set(file('samples/java-plsql/src/main/sql'))
                 includes.set(["**/*.sql"])
             }
-            sourceSet('java') {
+            sourceSet('java-sample') {
                 parserPlugin.set("name.jurgenei.gradle.antlr.java")
                 sourceDirectory.set(file('samples/java-plsql/src/main/java'))
                 includes.set(["**/*.java"])

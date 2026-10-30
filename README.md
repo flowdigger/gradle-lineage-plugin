@@ -116,7 +116,7 @@ lineagePipeline {
 }
 ```
 
-`syncLineageRepos` clones/updates configured repositories under `sourceRoot` before parse tasks.
+`syncLineageRepos` clones/updates configured repositories under `sourceRoot` before parse tasks. For existing checkouts, it fetches remotes before checking out configured `ref`; fast-forward pull still requires `-PlineageSyncUpdate=true` (or `LINEAGE_SYNC_UPDATE=true`).
 
 ---
 
@@ -227,10 +227,8 @@ build/lineage-uniform/5.merge/sql-index
 ```
 
 **Observe phase fails on docs/config inputs**  
-Provide expected paths or skip affected local tasks:
-- `../../configuration`
-- `../../docs/active`
-- `../../docs/fd`
+- `docs/active` and `docs/fd` OOXML observe tasks now auto-skip when folders are missing or contain no OOXML files.
+- `configuration` inputs are still expected when `generateConfiguration` runs.
 
 **Long parse times / memory pressure**  
 Tune parser concurrency in conventions plugin:

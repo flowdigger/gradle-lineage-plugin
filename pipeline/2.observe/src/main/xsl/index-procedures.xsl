@@ -13,12 +13,61 @@
     <xsl:output method="xml" indent="yes"/>
     <xsl:strip-space elements="*"/>
     <xsl:mode on-no-match="shallow-copy"/>
-    <xsl:variable name="docs"
-                  select="collection(concat($collection, '?on-error=ignore;recurse=yes;select=', $select-pattern))"/>
+
+    <xsl:function name="fn:strip-query" as="xs:string">
+        <xsl:param name="uri" as="xs:string?"/>
+        <xsl:sequence select="replace(normalize-space($uri), '\?.*$', '')"/>
+    </xsl:function>
+
+    <xsl:function name="fn:parent-dir-uri" as="xs:string">
+        <xsl:param name="uri" as="xs:string?"/>
+        <xsl:variable name="base" select="replace(fn:strip-query($uri), '/+$', '')" as="xs:string"/>
+        <xsl:variable name="parent" select="replace($base, '/[^/]*$', '')" as="xs:string"/>
+        <xsl:sequence select="if (ends-with($parent, '/')) then $parent else $parent || '/'"/>
+    </xsl:function>
+
+    <xsl:function name="fn:schema-matches-doc" as="xs:boolean">
+        <xsl:param name="doc" as="document-node()"/>
+        <xsl:param name="schema-name" as="xs:string?"/>
+        <xsl:variable name="schema-lc" select="lower-case(normalize-space($schema-name))" as="xs:string"/>
+        <xsl:variable name="uri" select="lower-case(string((document-uri($doc), base-uri($doc))[1]))" as="xs:string"/>
+        <xsl:variable name="prefix" select="$schema-lc || '.'" as="xs:string"/>
+        <xsl:variable name="table-refs" as="xs:string*"
+                      select="($doc//to/@name, $doc//from/@name) ! lower-case(normalize-space(.))"/>
+        <xsl:variable name="procedure-refs" as="xs:string*"
+                      select="$doc//procedure/@name ! lower-case(normalize-space(.))"/>
+        <xsl:variable name="call-schemas" as="xs:string*"
+                      select="$doc//call/@schema ! lower-case(normalize-space(.))"/>
+        <xsl:sequence select="
+            if ($schema-lc = '') then true()
+            else contains('/' || $uri || '/', '/' || $schema-lc || '/')
+                 or (some $p in $procedure-refs satisfies starts-with($p, $prefix))
+                 or (some $t in $table-refs satisfies starts-with($t, $prefix))
+                 or (some $c in $call-schemas satisfies $c = $schema-lc)"/>
+    </xsl:function>
+
+    <xsl:function name="fn:safe-collection" as="document-node()*">
+        <xsl:param name="uri" as="xs:string"/>
+        <xsl:try>
+            <xsl:sequence select="collection($uri)"/>
+            <xsl:catch errors="*">
+                <xsl:sequence select="()"/>
+            </xsl:catch>
+        </xsl:try>
+    </xsl:function>
     <!--
         Toplevel Scan all procedures
       -->
     <xsl:template match="/">
+        <xsl:variable name="primary-collection"
+                      select="concat($collection, '?on-error=ignore;recurse=yes;select=', $select-pattern)"/>
+        <xsl:variable name="primary-docs" select="fn:safe-collection($primary-collection)" as="document-node()*"/>
+        <xsl:variable name="fallback-collection"
+                      select="concat(fn:parent-dir-uri($collection), '?on-error=ignore;recurse=yes;select=', $select-pattern)"/>
+        <xsl:variable name="resolved-docs"
+                      select="if (exists($primary-docs)) then $primary-docs else fn:safe-collection($fallback-collection)"
+                      as="document-node()*"/>
+        <xsl:variable name="docs" select="$resolved-docs[fn:schema-matches-doc(., $schema)]" as="document-node()*"/>
         <xsl:variable name="currentDate" select="xs:string(current-dateTime())"/>
         <xsl:variable name="currentDateFmt" select="replace(normalize-space($currentDate),
             '^(\d{2})-(\d{2})-(\d{4})\s+(.*)','$3-$1-$2T$4Z')"/>

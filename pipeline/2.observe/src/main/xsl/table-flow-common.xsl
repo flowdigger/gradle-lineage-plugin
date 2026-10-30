@@ -89,5 +89,62 @@
                               else 'unknown'"/>
     </xsl:function>
 
-</xsl:stylesheet>
+    <xsl:function name="c:strip-query" as="xs:string">
+        <xsl:param name="uri" as="xs:string?"/>
+        <xsl:sequence select="replace(normalize-space($uri), '\?.*$', '')"/>
+    </xsl:function>
 
+    <xsl:function name="c:parent-dir-uri" as="xs:string">
+        <xsl:param name="uri" as="xs:string?"/>
+        <xsl:variable name="base" select="replace(c:strip-query($uri), '/+$', '')" as="xs:string"/>
+        <xsl:variable name="parent" select="replace($base, '/[^/]*$', '')" as="xs:string"/>
+        <xsl:sequence select="if (ends-with($parent, '/')) then $parent else $parent || '/'"/>
+    </xsl:function>
+
+    <xsl:function name="c:schema-matches-doc" as="xs:boolean">
+        <xsl:param name="doc" as="document-node()"/>
+        <xsl:param name="schema" as="xs:string?"/>
+        <xsl:variable name="schema-lc" select="lower-case(normalize-space($schema))" as="xs:string"/>
+        <xsl:variable name="uri" select="lower-case(string((document-uri($doc), base-uri($doc))[1]))" as="xs:string"/>
+        <xsl:variable name="prefix" select="$schema-lc || '.'" as="xs:string"/>
+        <xsl:variable name="table-refs" as="xs:string*"
+                      select="($doc//to/@name, $doc//from/@name) ! lower-case(normalize-space(.))"/>
+        <xsl:variable name="procedure-refs" as="xs:string*"
+                      select="$doc//procedure/@name ! lower-case(normalize-space(.))"/>
+        <xsl:variable name="call-schemas" as="xs:string*"
+                      select="$doc//call/@schema ! lower-case(normalize-space(.))"/>
+        <xsl:sequence select="
+            if ($schema-lc = '') then true()
+            else contains('/' || $uri || '/', '/' || $schema-lc || '/')
+                 or (some $p in $procedure-refs satisfies starts-with($p, $prefix))
+                 or (some $t in $table-refs satisfies starts-with($t, $prefix))
+                 or (some $c in $call-schemas satisfies $c = $schema-lc)"/>
+    </xsl:function>
+
+    <xsl:function name="c:safe-collection" as="document-node()*">
+        <xsl:param name="uri" as="xs:string"/>
+        <xsl:try>
+            <xsl:sequence select="collection($uri)"/>
+            <xsl:catch errors="*">
+                <xsl:sequence select="()"/>
+            </xsl:catch>
+        </xsl:try>
+    </xsl:function>
+
+    <xsl:function name="c:docs-for-schema" as="document-node()*">
+        <xsl:param name="context" as="node()"/>
+        <xsl:param name="input-uri" as="xs:string?"/>
+        <xsl:param name="schema" as="xs:string?"/>
+
+        <xsl:variable name="primary-uri" select="c:collection-uri($context, $input-uri)" as="xs:string"/>
+        <xsl:variable name="primary-docs" select="c:safe-collection($primary-uri)" as="document-node()*"/>
+        <xsl:variable name="fallback-uri"
+                      select="c:parent-dir-uri($input-uri) || '?select=*.' || $ext || ';recurse=yes;on-error=ignore'"
+                      as="xs:string"/>
+        <xsl:variable name="resolved-docs"
+                      select="if (exists($primary-docs)) then $primary-docs else c:safe-collection($fallback-uri)"
+                      as="document-node()*"/>
+        <xsl:sequence select="$resolved-docs[c:schema-matches-doc(., $schema)]"/>
+    </xsl:function>
+
+</xsl:stylesheet>

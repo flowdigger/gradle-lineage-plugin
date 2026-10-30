@@ -22,12 +22,12 @@ class LineageRepoSyncTasks {
                         }.result.get().assertNormalExitValue()
                     } else {
                         project.providers.exec {
+                            commandLine("git", "-C", repoDir.absolutePath, "fetch", "--all", "--prune")
+                        }.result.get().assertNormalExitValue()
+                        project.providers.exec {
                             commandLine("git", "-C", repoDir.absolutePath, "checkout", repo.ref.toString())
                         }.result.get().assertNormalExitValue()
                         if (updateExistingRepos) {
-                            project.providers.exec {
-                                commandLine("git", "-C", repoDir.absolutePath, "fetch", "--all", "--prune")
-                            }.result.get().assertNormalExitValue()
                             project.providers.exec {
                                 commandLine("git", "-C", repoDir.absolutePath, "pull", "--ff-only", "origin", repo.ref.toString())
                             }.result.get().assertNormalExitValue()
