@@ -91,10 +91,11 @@ lineagePipeline {
   repos {
     repo {
       uri.set("https://github.com/jurgenei/gradle-lineage-plugin")
-      ref.set("main")
+      // ref.set("main") // optional
       sourceSet('sql') {
         parserPlugin.set("name.jurgenei.gradle.antlr.plsql")
         sourceDirectory.set(file('src/test/sql'))
+        schemas.set('buss', 'cons', 'sdp', 'dsa') // optional; defaults to folder-derived names
         includes.set(["**/*.sql"])
       }
       sourceSet('java') {
@@ -116,7 +117,22 @@ lineagePipeline {
 }
 ```
 
-`syncLineageRepos` clones/updates configured repositories under `sourceRoot` before parse tasks. For existing checkouts, it fetches remotes before checking out configured `ref`; fast-forward pull still requires `-PlineageSyncUpdate=true` (or `LINEAGE_SYNC_UPDATE=true`).
+SQL schema resolution precedence for merge/index fan-out:
+1. `sourceSet.schemas(...)` when configured
+2. top-level folders under SQL `sourceDirectory` (for example `buss/**/*.sql`, `cons/**/*.sql`)
+3. fallback `lineagePipeline.schemaNames` (compatibility, including first run before repo sync)
+
+Root-level SQL files directly under `sourceDirectory` map to default schema `""` and are still parsed/observed, but schema-index tasks are generated only for non-empty schema names.
+
+`syncLineageRepos` clones/updates configured repositories under `sourceRoot` before parse tasks. For existing checkouts, it fetches remotes, checks out configured `ref`, then runs fast-forward `git pull` from remote.
+
+When `ref.set(...)` is omitted, lineage repo `ref` is resolved with precedence:
+1. `-PlineageRepoRef=<ref>` (or legacy `-PlineageSampleRef=<ref>`)
+2. `LINEAGE_REPO_REF` (or legacy `LINEAGE_SAMPLE_REF`)
+3. current git branch (`git rev-parse --abbrev-ref HEAD`)
+4. fallback `main`
+
+During `syncLineageRepo*` tasks, plugin logs selected branch source in lifecycle output.
 
 ---
 

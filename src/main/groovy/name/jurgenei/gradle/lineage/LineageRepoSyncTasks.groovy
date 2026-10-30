@@ -12,9 +12,7 @@ class LineageRepoSyncTasks {
                 description = "Clone or update lineage source repo ${repo.uri} at ref ${repo.ref}."
                 doLast {
                     def repoDir = project.file(repo.directory.toString())
-                    def updateExistingRepos = ((project.findProperty('lineageSyncUpdate')
-                            ?: project.providers.environmentVariable('LINEAGE_SYNC_UPDATE').orNull
-                            ?: 'false').toString().trim().toLowerCase()) in ['1', 'true', 'yes', 'y', 'on']
+                    project.logger.lifecycle("Lineage repo ${repo.name}: using ref '${repo.ref}' (${repo.refSource ?: 'repo.ref'}).")
                     if (!repoDir.exists()) {
                         repoDir.parentFile.mkdirs()
                         project.providers.exec {
@@ -27,13 +25,9 @@ class LineageRepoSyncTasks {
                         project.providers.exec {
                             commandLine("git", "-C", repoDir.absolutePath, "checkout", repo.ref.toString())
                         }.result.get().assertNormalExitValue()
-                        if (updateExistingRepos) {
-                            project.providers.exec {
-                                commandLine("git", "-C", repoDir.absolutePath, "pull", "--ff-only", "origin", repo.ref.toString())
-                            }.result.get().assertNormalExitValue()
-                        } else {
-                            project.logger.lifecycle("Skipping remote sync for existing repo ${repoDir.name}. Enable with -PlineageSyncUpdate=true or LINEAGE_SYNC_UPDATE=true.")
-                        }
+                        project.providers.exec {
+                            commandLine("git", "-C", repoDir.absolutePath, "pull", "--ff-only", "origin", repo.ref.toString())
+                        }.result.get().assertNormalExitValue()
                     }
                 }
             }

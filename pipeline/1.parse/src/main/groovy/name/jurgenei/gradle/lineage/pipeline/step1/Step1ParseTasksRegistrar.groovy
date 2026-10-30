@@ -31,6 +31,7 @@ class Step1ParseTasksRegistrar {
                 ctx.project.tasks.register(taskName, ctx.xmlAstPlsqlTaskClass) { t ->
                     group = 'lineage'
                     description = "Phase 1.parse PLSQL AST extraction for ${sourceSetName}."
+                    dependsOn("syncLineageRepos")
                     configurePlsqlTask(t, sourceSet as Map<String, Object>)
                 }
                 return
@@ -42,6 +43,7 @@ class Step1ParseTasksRegistrar {
                 ctx.project.tasks.register(taskName, ctx.xmlAstJavaTaskClass) { t ->
                     group = 'lineage'
                     description = "Phase 1.parse Java AST extraction for ${sourceSetName}."
+                    dependsOn("syncLineageRepos")
                     t.sourceDirectory.set(ctx.project.file(sourceSet.sourceDirectoryAbsolute.toString()))
                     t.destinationDirectory.set(ctx.project.file("${ctx.parseRoot}/java/${sourceSetName}/ast"))
                     t.targetExtension.set(".xml")

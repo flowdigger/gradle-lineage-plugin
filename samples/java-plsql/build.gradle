@@ -31,10 +31,10 @@ lineagePipeline {
     repos {
         repo {
             uri.set("https://github.com/jurgenei/gradle-lineage-plugin")
-            ref.set("november")
             sourceSet('sql-sample') {
                 parserPlugin.set("name.jurgenei.gradle.antlr.plsql")
                 sourceDirectory.set(file('samples/java-plsql/src/main/sql'))
+                schemas.set(['dsa'])
                 includes.set(["**/*.sql"])
             }
             sourceSet('java-sample') {
