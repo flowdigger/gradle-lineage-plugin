@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+  <!--
+    Groovy closure classes are compiler-generated Serializable types.
+    serialVersionUID and representation-exposure findings on these classes are noise for this plugin.
+  -->
+  <Match>
+    <Bug pattern="SE_NO_SERIALVERSIONID,EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+  </Match>
+</FindBugsFilter>

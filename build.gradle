@@ -136,6 +136,7 @@ plugins.withId('com.github.spotbugs') {
 				.get()
 		effort = com.github.spotbugs.snom.Effort.DEFAULT
 		reportLevel = com.github.spotbugs.snom.Confidence.valueOf('MEDIUM')
+		excludeFilter = file('spotbugs-exclude.xml')
 		reports.create('html').required = true
 		reports.create('xml').required = false
 	}

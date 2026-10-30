@@ -15,32 +15,22 @@ permissions:
 
 jobs:
   analyze:
-    name: Analyze (Java)
+    name: Analyze (Actions)
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        language: ["java-kotlin"]
+        language: ["actions"]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Setup Java 21
-        uses: actions/setup-java@v6
-        with:
-          distribution: temurin
-          java-version: "21"
-          cache: gradle
-
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
-
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v4
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
