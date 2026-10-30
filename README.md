@@ -38,28 +38,18 @@ Plugin wires deterministic lifecycle that:
 8. exports GraphML/RDF/JSON (+ graph layout)
 9. publishes artifacts
 
-Default output root:
+Internal wiring now split by responsibility:
+- `LineageConventionsPlugin`: root-only apply + orchestration
+- `LineageConfigResolver`: extension + property/env resolution and source-set validation
+- `LineageRepoSyncTasks`: `syncLineageRepo*` and `syncLineageRepos`
+- `LineagePipelineTasks`: phase orchestration only
+- `LineagePipelineContext`: shared resolved phase context
+- `pipeline/{1.parse..9.publish}`: multi-project phase modules, each with own `build.gradle` + `src/main` resources and registrar code
+- `LineageGlobalTasks`: `clean`, `cleanAllLineage`, and `build -> publishLineage`
 
-```text
-../../../build/lineage-uniform
-```
-
-Override per run:
-
-```bash
-./gradlew -PlineageBuildRoot=/tmp/lineage-uniform build
-```
-
----
-
-## Apply plugin
-
-```groovy
-plugins {
-  id 'base'
-  id 'name.jurgenei.gradle.lineage'
-}
-```
+Sanity coverage:
+- Gradle TestKit task-graph and clean-behavior tests
+- XML smoke tests using `gradle-xml-plugin` XSpec/Schematron tasks for representative pipeline assets
 
 ---
 
@@ -68,35 +58,71 @@ plugins {
 Minimal example:
 
 ```groovy
+
+plugins {
+  id 'base'
+  id 'name.jurgenei.gradle.lineage' version '0.1.0'
+  id 'name.jurgenei.gradle.xml' version '0.1.15'
+  id 'name.jurgenei.gradle.antlr.plsql' version '0.1.8'
+  id 'name.jurgenei.gradle.antlr.java' version '0.1.4'
+  id 'name.jurgenei.gradle.ooxml' version '0.1.12' apply false
+  id 'name.jurgenei.gradle.python' version '0.1.4' apply false
+}
+
+repositories {
+  gradlePluginPortal()
+  mavenCentral()
+}
+
+def gSampleSourceRoot = rootProject.file('build/source').absolutePath
+def gSampleLineageBuildRoot = rootProject.file('build/lineage').absolutePath
+def gSampleArchitectureModelFile = rootProject.file('src/main/xml/architecture.xml').absolutePath
+
+println("Sample lineage build root: ${gSampleLineageBuildRoot}")
+println("Sample source root: ${gSampleSourceRoot}")
+println("Sample architecture model file: ${gSampleArchitectureModelFile}")
+
 lineagePipeline {
-  sourceRoot = rootProject.projectDir.parentFile.absolutePath
-  lineageBuildRoot = rootProject.file('../../build/lineage-uniform').absolutePath
-  architectureModelFile = "${sourceRoot}/architecture/vortex-archimate-risk.xml"
+  sourceRoot = gSampleSourceRoot
+  lineageBuildRoot = gSampleLineageBuildRoot
+  architectureModelFile = gSampleArchitectureModelFile
+  skipLineageValidations = true
 
   repos {
     repo {
-      uri.set("https://github.com/jurgenei/example-lineage-plsql")
-      ref.set("main")
-      sourceSet('sql') {
+      uri.set("https://github.com/jurgenei/gradle-lineage-plugin")
+      sourceSet('sql-sample') {
         parserPlugin.set("name.jurgenei.gradle.antlr.plsql")
-        sourceDirectory.set(file('src/main/sql'))
-        includes.set(["{views,procedures,package_bodies}/**.sql"])
+        sourceDirectory.set(file('samples/java-plsql/src/main/sql'))
+        schemas.set(['dsa'])
+        includes.set(["**/*.sql"])
       }
-      sourceSet('java') {
+      sourceSet('java-sample') {
         parserPlugin.set("name.jurgenei.gradle.antlr.java")
-        sourceDirectory.set(file('src/main/java'))
+        sourceDirectory.set(file('samples/java-plsql/src/main/java'))
         includes.set(["**/*.java"])
       }
     }
   }
-
-  // Optional:
-  // architectureProcessedFile defaults to:
-  // "${lineageBuildRoot}/6.stitch/architecture/<architectureModelFile basename>"
 }
 ```
 
-`syncLineageRepos` clones/updates configured repositories under `sourceRoot` before parse tasks.
+SQL schema resolution precedence for merge/index fan-out:
+1. `sourceSet.schemas(...)` when configured
+2. top-level folders under SQL `sourceDirectory` (for example `buss/**/*.sql`, `cons/**/*.sql`)
+3. fallback `lineagePipeline.schemaNames` (compatibility, including first run before repo sync)
+
+Root-level SQL files directly under `sourceDirectory` map to default schema `""` and are still parsed/observed, but schema-index tasks are generated only for non-empty schema names.
+
+`syncLineageRepos` clones/updates configured repositories under `sourceRoot` before parse tasks. For existing checkouts, it fetches remotes, checks out configured `ref`, then runs fast-forward `git pull` from remote.
+
+When `ref.set(...)` is omitted, lineage repo `ref` is resolved with precedence:
+1. `-PlineageRepoRef=<ref>` (or legacy `-PlineageSampleRef=<ref>`)
+2. `LINEAGE_REPO_REF` (or legacy `LINEAGE_SAMPLE_REF`)
+3. current git branch (`git rev-parse --abbrev-ref HEAD`)
+4. fallback `main`
+
+During `syncLineageRepo*` tasks, plugin logs selected branch source in lifecycle output.
 
 ---
 
@@ -207,10 +233,8 @@ build/lineage-uniform/5.merge/sql-index
 ```
 
 **Observe phase fails on docs/config inputs**  
-Provide expected paths or skip affected local tasks:
-- `../../configuration`
-- `../../docs/active`
-- `../../docs/fd`
+- `docs/active` and `docs/fd` OOXML observe tasks now auto-skip when folders are missing or contain no OOXML files.
+- `configuration` inputs are still expected when `generateConfiguration` runs.
 
 **Long parse times / memory pressure**  
 Tune parser concurrency in conventions plugin:

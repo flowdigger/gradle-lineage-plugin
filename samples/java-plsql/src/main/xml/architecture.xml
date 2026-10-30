@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model>
+    <applicationcomponent-group>
+        <applicationcomponent id="id-2e082e59edcc4982a6d2036ea9bc4f22" name="example-component">
+            <app>
+                <database name="test">
+                    <calls>
+                        <call name="update_customer" />
+                    </calls>
+                    <tables>
+                        <table name="customer"/>
+                    </tables>
+                    <java-lineage domain="vre" source="vre">
+                        <static>
+                            <entrypoint class="com.example.Customer"/>
+                        </static>
+                    </java-lineage>
+                </database>
+            </app>
+        </applicationcomponent>
+    </applicationcomponent-group>
+</model>

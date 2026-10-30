@@ -74,6 +74,48 @@
         </xsl:choose>
     </xsl:function>
 
+    <xsl:function name="f:strip-query" as="xs:string">
+        <xsl:param name="uri" as="xs:string?"/>
+        <xsl:sequence select="replace(normalize-space($uri), '\?.*$', '')"/>
+    </xsl:function>
+
+    <xsl:function name="f:parent-dir-uri" as="xs:string">
+        <xsl:param name="uri" as="xs:string?"/>
+        <xsl:variable name="base" select="replace(f:strip-query($uri), '/+$', '')" as="xs:string"/>
+        <xsl:variable name="parent" select="replace($base, '/[^/]*$', '')" as="xs:string"/>
+        <xsl:sequence select="if (ends-with($parent, '/')) then $parent else $parent || '/'"/>
+    </xsl:function>
+
+    <xsl:function name="f:schema-matches-doc" as="xs:boolean">
+        <xsl:param name="doc" as="document-node()"/>
+        <xsl:param name="schema-name" as="xs:string?"/>
+        <xsl:variable name="schema-lc" select="lower-case(normalize-space($schema-name))" as="xs:string"/>
+        <xsl:variable name="uri" select="lower-case(string((document-uri($doc), base-uri($doc))[1]))" as="xs:string"/>
+        <xsl:variable name="prefix" select="$schema-lc || '.'" as="xs:string"/>
+        <xsl:variable name="table-refs" as="xs:string*"
+                      select="($doc//to/@name, $doc//from/@name) ! lower-case(normalize-space(.))"/>
+        <xsl:variable name="procedure-refs" as="xs:string*"
+                      select="$doc//procedure/@name ! lower-case(normalize-space(.))"/>
+        <xsl:variable name="call-schemas" as="xs:string*"
+                      select="$doc//call/@schema ! lower-case(normalize-space(.))"/>
+        <xsl:sequence select="
+            if ($schema-lc = '') then true()
+            else contains('/' || $uri || '/', '/' || $schema-lc || '/')
+                 or (some $p in $procedure-refs satisfies starts-with($p, $prefix))
+                 or (some $t in $table-refs satisfies starts-with($t, $prefix))
+                 or (some $c in $call-schemas satisfies $c = $schema-lc)"/>
+    </xsl:function>
+
+    <xsl:function name="f:safe-collection" as="document-node()*">
+        <xsl:param name="uri" as="xs:string"/>
+        <xsl:try>
+            <xsl:sequence select="collection($uri)"/>
+            <xsl:catch errors="*">
+                <xsl:sequence select="()"/>
+            </xsl:catch>
+        </xsl:try>
+    </xsl:function>
+
     <!--~
         Function: f:procedure-containers
         Description: Returns the procedure elements from a document, or the root lineage if no procedures exist.
@@ -223,11 +265,20 @@
         Description: Main entry point. Loads all relevant XML files, builds call tree from procedures within same schema.
     -->
     <xsl:template match="/">
-        <xsl:variable name="docs" select="collection(f:collection-uri(., $input-uri))" as="document-node()*"/>
-
         <!-- Extract schema from input-uri parameter -->
         <xsl:variable name="detected-schema" select="f:extract-schema($input-uri)" as="xs:string"/>
         <xsl:variable name="effective-schema" select="if (normalize-space($schema-name)) then $schema-name else $detected-schema" as="xs:string"/>
+        <xsl:variable name="primary-uri" select="f:collection-uri(., $input-uri)" as="xs:string"/>
+        <xsl:variable name="primary-docs" select="f:safe-collection($primary-uri)" as="document-node()*"/>
+        <xsl:variable name="fallback-uri"
+                      select="f:parent-dir-uri($input-uri) || '?select=*.xir;recurse=yes;on-error=ignore'"
+                      as="xs:string"/>
+        <xsl:variable name="resolved-docs"
+                      select="if (exists($primary-docs)) then $primary-docs else f:safe-collection($fallback-uri)"
+                      as="document-node()*"/>
+        <xsl:variable name="docs"
+                      select="$resolved-docs[f:schema-matches-doc(., $effective-schema)]"
+                      as="document-node()*"/>
 
         <!-- Extract all procedures from all documents -->
         <xsl:variable name="all-procedures" as="element()*">

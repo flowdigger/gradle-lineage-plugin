@@ -1,0 +1,47 @@
+
+plugins {
+    id 'base'
+    id 'name.jurgenei.gradle.lineage' version '0.1.0'
+    id 'name.jurgenei.gradle.xml' version '0.1.15'
+    id 'name.jurgenei.gradle.antlr.plsql' version '0.1.8'
+    id 'name.jurgenei.gradle.antlr.java' version '0.1.4'
+    id 'name.jurgenei.gradle.ooxml' version '0.1.12' apply false
+    id 'name.jurgenei.gradle.python' version '0.1.4' apply false
+}
+
+repositories {
+    gradlePluginPortal()
+    mavenCentral()
+}
+
+def gSampleSourceRoot = rootProject.file('build/source').absolutePath
+def gSampleLineageBuildRoot = rootProject.file('build/lineage').absolutePath
+def gSampleArchitectureModelFile = rootProject.file('src/main/xml/architecture.xml').absolutePath
+
+println("Sample lineage build root: ${gSampleLineageBuildRoot}")
+println("Sample source root: ${gSampleSourceRoot}")
+println("Sample architecture model file: ${gSampleArchitectureModelFile}")
+
+lineagePipeline {
+    sourceRoot = gSampleSourceRoot
+    lineageBuildRoot = gSampleLineageBuildRoot
+    architectureModelFile = gSampleArchitectureModelFile
+    skipLineageValidations = true
+
+    repos {
+        repo {
+            uri.set("https://github.com/jurgenei/gradle-lineage-plugin")
+            sourceSet('sql-sample') {
+                parserPlugin.set("name.jurgenei.gradle.antlr.plsql")
+                sourceDirectory.set(file('samples/java-plsql/src/main/sql'))
+                schemas.set(['dsa'])
+                includes.set(["**/*.sql"])
+            }
+            sourceSet('java-sample') {
+                parserPlugin.set("name.jurgenei.gradle.antlr.java")
+                sourceDirectory.set(file('samples/java-plsql/src/main/java'))
+                includes.set(["**/*.java"])
+            }
+        }
+    }
+}

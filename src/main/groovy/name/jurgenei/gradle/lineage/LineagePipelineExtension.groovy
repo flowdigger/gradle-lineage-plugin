@@ -4,9 +4,10 @@ class LineagePipelineExtension {
     String sourceRoot
     String lineageBuildRoot
     Boolean skipLineageValidations
-    List<String> schemaNames = ['buss', 'cons', 'sdp', 'dsa', 'sdp_staging', 'dsa_staging']
+    List<String> schemaNames = []
     String architectureModelFile
     String architectureProcessedFile
+    String appSticherStylesheet
 
     final ReposConfig repos = new ReposConfig()
 
@@ -31,7 +32,7 @@ class ReposConfig {
 
 class RepoConfig {
     final MutableProperty<String> uri = new MutableProperty<>()
-    final MutableProperty<String> ref = new MutableProperty<>("master")
+    final MutableProperty<String> ref = new MutableProperty<>()
     final List<SourceSetConfig> sourceSets = []
 
     void sourceSet(String name, Closure<?> closure) {
@@ -47,7 +48,8 @@ class SourceSetConfig {
     final String name
     final MutableProperty<String> parserPlugin = new MutableProperty<>()
     final MutableProperty<Object> sourceDirectory = new MutableProperty<>()
-    final MutableProperty<List<String>> includes = new MutableProperty<>([])
+    final MutableListProperty<String> includes = new MutableListProperty<>()
+    final MutableListProperty<String> schemas = new MutableListProperty<>()
 
     SourceSetConfig(String name) {
         this.name = name
@@ -68,6 +70,22 @@ class MutableProperty<T> {
     }
 
     T get() {
+        return value
+    }
+}
+
+class MutableListProperty<T> {
+    private List<T> value = []
+
+    void set(List<?> value) {
+        this.value = (value ?: []).collect { it as T }
+    }
+
+    void set(T... values) {
+        this.value = values ? values.toList() : []
+    }
+
+    List<T> get() {
         return value
     }
 }

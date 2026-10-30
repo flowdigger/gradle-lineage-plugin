@@ -12,6 +12,39 @@ repositories {
     mavenCentral()
 }
 
+subprojects {
+    apply plugin: 'groovy'
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+    dependencies {
+        implementation gradleApi()
+        implementation localGroovy()
+    }
+}
+
+dependencies {
+    implementation project(':pipeline:step1-parse')
+    implementation project(':pipeline:step2-observe')
+    implementation project(':pipeline:step3-direct-flow')
+    implementation project(':pipeline:step4-validate-direct-flow')
+    implementation project(':pipeline:step5-merge')
+    implementation project(':pipeline:step6-stitch')
+    implementation project(':pipeline:step7-validate-lineage')
+    implementation project(':pipeline:step8-export')
+    implementation project(':pipeline:step9-publish')
+
+    testImplementation gradleTestKit()
+    testImplementation localGroovy()
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.2'
+}
+
+test {
+    useJUnitPlatform()
+}
+
 gradlePlugin {
     plugins {
         lineageConventions {

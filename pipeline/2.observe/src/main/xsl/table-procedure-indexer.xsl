@@ -22,7 +22,7 @@
     -->
     <xsl:template match="/">
         <xsl:variable name="docs"
-                      select="collection(c:collection-uri(., $input-uri))"
+                      select="c:docs-for-schema(., $input-uri, $schema-name)"
                       as="document-node()*"/>
         <xsl:variable name="first-uri" select="string((for $d in $docs return document-uri($d))[1])" as="xs:string"/>
         <xsl:variable name="procedures" select="for $d in $docs return c:procedure-containers($d)" as="element()*"/>
