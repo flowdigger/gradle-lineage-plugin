@@ -1,16 +1,16 @@
-package name.jurgenei.gradle.lineage
+package org.flowdigger.gradle.lineage
 
 import org.gradle.api.Project
 
-import name.jurgenei.gradle.lineage.pipeline.step1.Step1ParseTasksRegistrar
-import name.jurgenei.gradle.lineage.pipeline.step2.Step2ObserveTasksRegistrar
-import name.jurgenei.gradle.lineage.pipeline.step3.Step3DirectFlowTasksRegistrar
-import name.jurgenei.gradle.lineage.pipeline.step4.Step4ValidateDirectFlowTasksRegistrar
-import name.jurgenei.gradle.lineage.pipeline.step5.Step5MergeTasksRegistrar
-import name.jurgenei.gradle.lineage.pipeline.step6.Step6StitchTasksRegistrar
-import name.jurgenei.gradle.lineage.pipeline.step7.Step7ValidateLineageTasksRegistrar
-import name.jurgenei.gradle.lineage.pipeline.step8.Step8ExportTasksRegistrar
-import name.jurgenei.gradle.lineage.pipeline.step9.Step9PublishTasksRegistrar
+import org.flowdigger.gradle.lineage.pipeline.step1.Step1ParseTasksRegistrar
+import org.flowdigger.gradle.lineage.pipeline.step2.Step2ObserveTasksRegistrar
+import org.flowdigger.gradle.lineage.pipeline.step3.Step3DirectFlowTasksRegistrar
+import org.flowdigger.gradle.lineage.pipeline.step4.Step4ValidateDirectFlowTasksRegistrar
+import org.flowdigger.gradle.lineage.pipeline.step5.Step5MergeTasksRegistrar
+import org.flowdigger.gradle.lineage.pipeline.step6.Step6StitchTasksRegistrar
+import org.flowdigger.gradle.lineage.pipeline.step7.Step7ValidateLineageTasksRegistrar
+import org.flowdigger.gradle.lineage.pipeline.step8.Step8ExportTasksRegistrar
+import org.flowdigger.gradle.lineage.pipeline.step9.Step9PublishTasksRegistrar
 
 class LineagePipelineTasks {
     static void register(Project project, Map<String, Object> cfg, LineagePipelineExtension ext) {

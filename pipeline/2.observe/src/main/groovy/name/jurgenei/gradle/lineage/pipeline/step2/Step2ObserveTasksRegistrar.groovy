@@ -1,4 +1,4 @@
-package name.jurgenei.gradle.lineage.pipeline.step2
+package org.flowdigger.gradle.lineage.pipeline.step2
 
 class Step2ObserveTasksRegistrar {
     static void register(def ctx) {

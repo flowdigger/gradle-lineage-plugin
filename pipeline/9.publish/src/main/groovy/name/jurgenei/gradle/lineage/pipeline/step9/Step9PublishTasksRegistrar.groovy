@@ -1,4 +1,4 @@
-package name.jurgenei.gradle.lineage.pipeline.step9
+package org.flowdigger.gradle.lineage.pipeline.step9
 
 class Step9PublishTasksRegistrar {
     static void register(def ctx) {
