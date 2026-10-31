@@ -1,4 +1,4 @@
-package name.jurgenei.gradle.lineage.pipeline.step8
+package org.flowdigger.gradle.lineage.pipeline.step8
 
 import org.gradle.api.GradleException
 

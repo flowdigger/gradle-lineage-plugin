@@ -1,4 +1,4 @@
-package name.jurgenei.gradle.lineage
+package org.flowdigger.gradle.lineage
 
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.Test
@@ -56,10 +56,10 @@ rootProject.name = 'lineage-xml-smoke'
         def pluginRoot = new File(System.getProperty('user.dir'))
         new File(projectDir, 'build.gradle').text = """
 plugins {
-  id 'name.jurgenei.gradle.xml' version '${XML_PLUGIN_VERSION}'
+  id 'org.flowdigger.gradle.xml' version '${XML_PLUGIN_VERSION}'
 }
 
-tasks.register('runXSpecSmoke', name.jurgenei.gradle.xml.XSpecTask) {
+tasks.register('runXSpecSmoke', org.flowdigger.gradle.xml.XSpecTask) {
   source fileTree('src/main/xspec') { include '**/*.xspec' }
   outputDir.set(layout.buildDirectory.dir('reports/xspec'))
 }
@@ -85,10 +85,10 @@ ext.pipelineRoot = '${new File(pluginRoot, 'pipeline').absolutePath.replace('\\'
     private static void writeSchematronBuild(File projectDir) {
         new File(projectDir, 'build.gradle').text = """
 plugins {
-  id 'name.jurgenei.gradle.xml' version '${XML_PLUGIN_VERSION}'
+  id 'org.flowdigger.gradle.xml' version '${XML_PLUGIN_VERSION}'
 }
 
-tasks.register('runSchematronSmoke', name.jurgenei.gradle.xml.SchematronTask) {
+tasks.register('runSchematronSmoke', org.flowdigger.gradle.xml.SchematronTask) {
   schema '${new File(System.getProperty('user.dir'), 'pipeline/7.validate-lineage/src/main/schematron/validate-lineage.sch').absolutePath.replace('\\', '\\\\')}'
   source file('src/main/xml/sample.xml')
   outputDir.set(layout.buildDirectory.dir('reports/schematron'))

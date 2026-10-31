@@ -1,4 +1,4 @@
-package name.jurgenei.gradle.lineage
+package org.flowdigger.gradle.lineage
 
 class LineagePipelineExtension {
     String sourceRoot

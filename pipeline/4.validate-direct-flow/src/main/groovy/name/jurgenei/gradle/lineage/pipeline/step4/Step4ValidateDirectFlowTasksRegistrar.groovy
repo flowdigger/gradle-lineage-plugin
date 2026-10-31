@@ -1,4 +1,4 @@
-package name.jurgenei.gradle.lineage.pipeline.step4
+package org.flowdigger.gradle.lineage.pipeline.step4
 
 class Step4ValidateDirectFlowTasksRegistrar {
     static void register(def ctx) {

@@ -1,4 +1,4 @@
-package name.jurgenei.gradle.lineage
+package org.flowdigger.gradle.lineage
 
 import org.gradle.api.Project
 

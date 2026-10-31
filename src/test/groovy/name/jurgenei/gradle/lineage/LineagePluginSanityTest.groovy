@@ -1,4 +1,4 @@
-package name.jurgenei.gradle.lineage
+package org.flowdigger.gradle.lineage
 
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.jupiter.api.Test
@@ -125,12 +125,12 @@ rootProject.name = 'lineage-plugin-sanity'
         new File(projectDir, 'build.gradle').text = """
 plugins {
   id 'base'
-  id 'name.jurgenei.gradle.xml' version '${XML_PLUGIN_VERSION}' apply false
-  id 'name.jurgenei.gradle.ooxml' version '${OOXML_PLUGIN_VERSION}' apply false
-  id 'name.jurgenei.gradle.python' version '${PYTHON_PLUGIN_VERSION}' apply false
-  id 'name.jurgenei.gradle.antlr.java' version '${ANTLR_JAVA_PLUGIN_VERSION}' apply false
-  id 'name.jurgenei.gradle.antlr.plsql' version '${ANTLR_PLSQL_PLUGIN_VERSION}' apply false
-  id 'name.jurgenei.gradle.lineage'
+  id 'org.flowdigger.gradle.xml' version '${XML_PLUGIN_VERSION}' apply false
+  id 'org.flowdigger.gradle.ooxml' version '${OOXML_PLUGIN_VERSION}' apply false
+  id 'org.flowdigger.gradle.python' version '${PYTHON_PLUGIN_VERSION}' apply false
+  id 'org.flowdigger.gradle.antlr.java' version '${ANTLR_JAVA_PLUGIN_VERSION}' apply false
+  id 'org.flowdigger.gradle.antlr.plsql' version '${ANTLR_PLSQL_PLUGIN_VERSION}' apply false
+  id 'org.flowdigger.gradle.lineage'
 }
 
 ext.set('lineagePluginPipelineRoot', '${pipelineRoot}')
@@ -144,7 +144,7 @@ ${optionalOverrideBlock}
       uri.set('https://github.com/example/demo-lineage.git')
       ref.set('main')
       sourceSet('java') {
-        parserPlugin.set('name.jurgenei.gradle.antlr.java')
+        parserPlugin.set('org.flowdigger.gradle.antlr.java')
         sourceDirectory.set(file('src/main/java'))
         includes.set(['**/*.java'])
       }

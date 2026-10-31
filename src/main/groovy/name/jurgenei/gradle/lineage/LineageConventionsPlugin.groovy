@@ -1,4 +1,4 @@
-package name.jurgenei.gradle.lineage
+package org.flowdigger.gradle.lineage
 
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
@@ -8,7 +8,7 @@ class LineageConventionsPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
         if (project != project.rootProject) {
-            throw new GradleException("name.jurgenei.gradle.lineage must be applied to root project only.")
+            throw new GradleException("org.flowdigger.gradle.lineage must be applied to root project only.")
         }
 
         def ext = project.extensions.create('lineagePipeline', LineagePipelineExtension)
