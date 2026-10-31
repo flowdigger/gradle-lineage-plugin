@@ -2,7 +2,6 @@
 
 ![Conformance](https://img.shields.io/badge/Conformance-Check--All%20Passing-brightgreen)
 
-[![Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/name.flowdigger.gradle.lineage?label=Plugin%20Portal)](https://plugins.gradle.org/plugin/name.flowdigger.gradle.lineage)
 [![Build and Test](https://github.com/flowdigger/gradle-lineage-plugin/actions/workflows/gradle-build.yml/badge.svg)](https://github.com/flowdigger/gradle-lineage-plugin/actions/workflows/gradle-build.yml)
 [![JUnit Report](https://img.shields.io/badge/JUnit-Report-blue?logo=githubactions)](https://github.com/flowdigger/gradle-lineage-plugin/actions/workflows/gradle-build.yml)
 [![Coverage CI](https://github.com/flowdigger/gradle-lineage-plugin/actions/workflows/coverage.yml/badge.svg)](https://github.com/flowdigger/gradle-lineage-plugin/actions/workflows/coverage.yml)
@@ -176,8 +175,6 @@ Publish plugin to Gradle Plugin Portal:
 
 ```bash
 ./gradlew publishToPluginPortal \
-  -Pgradle.publish.key=<key> \
-  -Pgradle.publish.secret=<secret>
 ```
 
 Skip validation guards (local diagnostics only):
