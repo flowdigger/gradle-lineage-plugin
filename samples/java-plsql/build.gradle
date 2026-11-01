@@ -1,12 +1,12 @@
 
 plugins {
     id 'base'
-    id 'name.jurgenei.gradle.lineage' version '0.1.0'
-    id 'name.jurgenei.gradle.xml' version '0.1.15'
-    id 'name.jurgenei.gradle.antlr.plsql' version '0.1.8'
-    id 'name.jurgenei.gradle.antlr.java' version '0.1.4'
-    id 'name.jurgenei.gradle.ooxml' version '0.1.12' apply false
-    id 'name.jurgenei.gradle.python' version '0.1.4' apply false
+    id 'org.flowdigger.gradle.lineage' version '0.1.0'
+    id 'org.flowdigger.gradle.xml' version '0.1.15'
+    id 'org.flowdigger.gradle.antlr.plsql' version '0.1.8'
+    id 'org.flowdigger.gradle.antlr.java' version '0.1.4'
+    id 'org.flowdigger.gradle.ooxml' version '0.1.12' apply false
+    id 'org.flowdigger.gradle.python' version '0.1.4' apply false
 }
 
 repositories {
@@ -32,13 +32,13 @@ lineagePipeline {
         repo {
             uri.set("https://github.com/jurgenei/gradle-lineage-plugin")
             sourceSet('sql-sample') {
-                parserPlugin.set("name.jurgenei.gradle.antlr.plsql")
+                parserPlugin.set("org.flowdigger.gradle.antlr.plsql")
                 sourceDirectory.set(file('samples/java-plsql/src/main/sql'))
                 schemas.set(['dsa'])
                 includes.set(["**/*.sql"])
             }
             sourceSet('java-sample') {
-                parserPlugin.set("name.jurgenei.gradle.antlr.java")
+                parserPlugin.set("org.flowdigger.gradle.antlr.java")
                 sourceDirectory.set(file('samples/java-plsql/src/main/java'))
                 includes.set(["**/*.java"])
             }

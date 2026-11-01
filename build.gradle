@@ -9,8 +9,8 @@ plugins {
 	id 'com.diffplug.spotless' version '8.10.4'
 }
 
-group = 'name.jurgenei.gradle'
-version = '0.1.0'
+group = 'org.flowdigger.gradle'
+version = '1.0.0'
 
 def enableSpotbugs = gradle.startParameter.taskNames
 		.collect { it.toLowerCase() }
@@ -147,8 +147,8 @@ gradlePlugin {
 	vcsUrl = 'https://github.com/jurgenei/gradle-lineage-plugin.git'
 	plugins {
 		lineageConventions {
-			id = 'name.jurgenei.gradle.lineage'
-			implementationClass = 'name.jurgenei.gradle.lineage.LineageConventionsPlugin'
+			id = 'org.flowdigger.gradle.lineage'
+			implementationClass = 'org.flowdigger.gradle.lineage.LineageConventionsPlugin'
 			displayName = 'Lineage pipeline conventions plugin'
 			description = 'Externalized and parameterized conventions for the 1.parse..9.publish lineage pipeline.'
 			tags.set([
