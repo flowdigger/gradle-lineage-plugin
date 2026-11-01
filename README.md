@@ -1,8 +1,8 @@
-# Gradle Lineage Plugin (`name.jurgenei.gradle.lineage`)
+# Gradle Lineage Plugin (`org.flowdigger.gradle.lineage`)
 
 ![Conformance](https://img.shields.io/badge/Conformance-Check--All%20Passing-brightgreen)
 
-[![Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/name.jurgenei.gradle.lineage?label=Plugin%20Portal)](https://plugins.gradle.org/plugin/name.jurgenei.gradle.lineage)
+[![Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/org.flowdigger.gradle.lineage?label=Plugin%20Portal)](https://plugins.gradle.org/plugin/org.flowdigger.gradle.lineage)
 [![Build and Test](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/gradle-build.yml/badge.svg)](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/gradle-build.yml)
 [![JUnit Report](https://img.shields.io/badge/JUnit-Report-blue?logo=githubactions)](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/gradle-build.yml)
 [![Coverage CI](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/coverage.yml/badge.svg)](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/coverage.yml)
@@ -77,12 +77,12 @@ Minimal example:
 
 plugins {
   id 'base'
-  id 'name.jurgenei.gradle.lineage' version '0.1.0'
-  id 'name.jurgenei.gradle.xml' version '0.1.15'
-  id 'name.jurgenei.gradle.antlr.plsql' version '0.1.8'
-  id 'name.jurgenei.gradle.antlr.java' version '0.1.4'
-  id 'name.jurgenei.gradle.ooxml' version '0.1.12' apply false
-  id 'name.jurgenei.gradle.python' version '0.1.4' apply false
+  id 'org.flowdigger.gradle.lineage' version '0.1.0'
+  id 'org.flowdigger.gradle.xml' version '0.1.15'
+  id 'org.flowdigger.gradle.antlr.plsql' version '0.1.8'
+  id 'org.flowdigger.gradle.antlr.java' version '0.1.4'
+  id 'org.flowdigger.gradle.ooxml' version '0.1.12' apply false
+  id 'org.flowdigger.gradle.python' version '0.1.4' apply false
 }
 
 repositories {
@@ -108,13 +108,13 @@ lineagePipeline {
     repo {
       uri.set("https://github.com/jurgenei/gradle-lineage-plugin")
       sourceSet('sql-sample') {
-        parserPlugin.set("name.jurgenei.gradle.antlr.plsql")
+        parserPlugin.set("org.flowdigger.gradle.antlr.plsql")
         sourceDirectory.set(file('samples/java-plsql/src/main/sql'))
         schemas.set(['dsa'])
         includes.set(["**/*.sql"])
       }
       sourceSet('java-sample') {
-        parserPlugin.set("name.jurgenei.gradle.antlr.java")
+        parserPlugin.set("org.flowdigger.gradle.antlr.java")
         sourceDirectory.set(file('samples/java-plsql/src/main/java'))
         includes.set(["**/*.java"])
       }
@@ -264,5 +264,5 @@ build/lineage-uniform/5.merge/sql-index
 Tune parser concurrency in conventions plugin:
 
 ```text
-build-logic/src/main/groovy/name/jurgenei/lineage/LineageConventionsPlugin.groovy
+build-logic/src/main/groovy/org/flowdigger/lineage/LineageConventionsPlugin.groovy
 ```

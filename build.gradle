@@ -10,7 +10,7 @@ plugins {
 }
 
 group = 'org.flowdigger.gradle'
-version = '0.1.0'
+version = '1.0.0'
 
 def enableSpotbugs = gradle.startParameter.taskNames
 		.collect { it.toLowerCase() }
