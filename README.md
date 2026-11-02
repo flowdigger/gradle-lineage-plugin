@@ -2,6 +2,9 @@
 
 ![Conformance](https://img.shields.io/badge/Conformance-Check--All%20Passing-brightgreen)
 
+[![Release](https://img.shields.io/github/v/release/flowdigger/gradle-lineage-plugin?sort=semver)](https://central.sonatype.com/search?q=g:org.flowdigger.gradle%20AND%20a:gradle-lineage-plugin)
+[![Maven Central](https://img.shields.io/maven-central/v/org.flowdigger.gradle/gradle-lineage-plugin?label=Maven%20Central)](https://central.sonatype.com/search?q=g:org.flowdigger.gradle%20AND%20a:gradle-lineage-plugin)
+
 [![Build and Test](https://github.com/flowdigger/gradle-lineage-plugin/actions/workflows/gradle-build.yml/badge.svg)](https://github.com/flowdigger/gradle-lineage-plugin/actions/workflows/gradle-build.yml)
 [![JUnit Report](https://img.shields.io/badge/JUnit-Report-blue?logo=githubactions)](https://github.com/flowdigger/gradle-lineage-plugin/actions/workflows/gradle-build.yml)
 [![Coverage CI](https://github.com/flowdigger/gradle-lineage-plugin/actions/workflows/coverage.yml/badge.svg)](https://github.com/flowdigger/gradle-lineage-plugin/actions/workflows/coverage.yml)
@@ -85,7 +88,6 @@ plugins {
 }
 
 repositories {
-  gradlePluginPortal()
   mavenCentral()
 }
 
@@ -171,10 +173,8 @@ Task graph only:
 ./gradlew -m publishLineage
 ```
 
-Publish plugin to Gradle Plugin Portal:
 
 ```bash
-./gradlew publishToPluginPortal \
 ```
 
 Skip validation guards (local diagnostics only):
