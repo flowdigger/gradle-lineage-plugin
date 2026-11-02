@@ -30,7 +30,7 @@ lineagePipeline {
 
     repos {
         repo {
-            uri.set("https://github.com/jurgenei/gradle-lineage-plugin")
+            uri.set("https://github.com/flowdigger/gradle-lineage-plugin")
             sourceSet('sql-sample') {
                 parserPlugin.set("org.flowdigger.gradle.antlr.plsql")
                 sourceDirectory.set(file('samples/java-plsql/src/main/sql'))

@@ -3,6 +3,7 @@ plugins {
 	id 'java-gradle-plugin'
 	id 'jacoco'
 	id 'maven-publish'
+	id 'signing'
 	id 'com.gradle.plugin-publish' version '2.2.1'
 	id 'org.owasp.dependencycheck' version '13.0.0'
 	id 'com.github.spotbugs' version '6.5.13' apply false
@@ -143,8 +144,8 @@ plugins.withId('com.github.spotbugs') {
 }
 
 gradlePlugin {
-	website = 'https://github.com/jurgenei/gradle-lineage-plugin'
-	vcsUrl = 'https://github.com/jurgenei/gradle-lineage-plugin.git'
+	website = 'https://github.com/flowdigger/gradle-lineage-plugin'
+	vcsUrl = 'https://github.com/flowdigger/gradle-lineage-plugin.git'
 	plugins {
 		lineageConventions {
 			id = 'org.flowdigger.gradle.lineage'
@@ -164,8 +165,64 @@ gradlePlugin {
 	}
 }
 
-tasks.register('publishToPluginPortal') {
-	group = 'publishing'
-	description = 'Publishes plugin to Gradle Plugin Portal.'
-	dependsOn tasks.named('publishPlugins')
+signing {
+	required = { gradle.taskGraph.hasTask('publish') }
+	def signingKey = findProperty('signingKey')
+	def signingPassword = findProperty('signingPassword')
+	if (signingKey && signingPassword) {
+		useInMemoryPgpKeys(signingKey, signingPassword)
+		sign publishing.publications
+	}
+}
+
+tasks.register('stageCentralBundleRepo', Sync) {
+	dependsOn tasks.named('publishToMavenLocal')
+	def artifactBaseDir = file("${System.getProperty('user.home')}/.m2/repository/org/flowdigger/gradle/gradle-lineage-plugin")
+	def artifactVersionDir = file("${artifactBaseDir}/${project.version}")
+	from(artifactVersionDir)
+	into(layout.buildDirectory.dir("central-staging-repo/org/flowdigger/gradle/gradle-lineage-plugin/${project.version}"))
+	doFirst {
+		if (!artifactVersionDir.exists()) {
+			throw new GradleException("Expected local Maven artifact version directory not found: ${artifactVersionDir}")
+		}
+	}
+}
+
+tasks.register('generateCentralBundleChecksums') {
+	dependsOn tasks.named('stageCentralBundleRepo')
+	doLast {
+		def stagedVersionDir = layout.buildDirectory
+				.dir("central-staging-repo/org/flowdigger/gradle/gradle-lineage-plugin/${project.version}")
+				.get()
+				.asFile
+		if (!stagedVersionDir.exists()) {
+			throw new GradleException("Expected staged version directory not found: ${stagedVersionDir}")
+		}
+		def checksum = { File file, String algorithm ->
+			def digest = java.security.MessageDigest.getInstance(algorithm)
+			file.withInputStream { input ->
+				byte[] buffer = new byte[8192]
+				int read
+				while ((read = input.read(buffer)) != -1) {
+					digest.update(buffer, 0, read)
+				}
+			}
+			digest.digest().collect { String.format('%02x', it & 0xff) }.join('')
+		}
+		stagedVersionDir.eachFileRecurse { file ->
+			if (file.isFile() && !file.name.endsWith('.md5') && !file.name.endsWith('.sha1')) {
+				new File(file.parentFile, "${file.name}.md5").text = "${checksum(file, 'MD5')}\n"
+				new File(file.parentFile, "${file.name}.sha1").text = "${checksum(file, 'SHA-1')}\n"
+			}
+		}
+	}
+}
+
+tasks.register('packageCentralBundle', Zip) {
+	dependsOn tasks.named('generateCentralBundleChecksums')
+	archiveBaseName.set('gradle-lineage-plugin')
+	archiveVersion.set(project.version.toString())
+	archiveClassifier.set('central-bundle')
+	destinationDirectory.set(layout.buildDirectory.dir('central-bundle'))
+	from(layout.buildDirectory.dir('central-staging-repo'))
 }
