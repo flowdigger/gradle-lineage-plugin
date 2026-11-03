@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   dependency-check:
-    uses: flowdigger/github-workflows/.github/workflows/dependency-check.yml@v1
+    uses: flowdigger/github-workflows/.github/workflows/dependency-check.yml@v1.1
     secrets: inherit
     with:
       trigger-event: ${{ github.event_name }}
