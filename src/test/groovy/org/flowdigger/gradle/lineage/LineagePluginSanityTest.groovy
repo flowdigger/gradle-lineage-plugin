@@ -10,11 +10,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse
 import static org.junit.jupiter.api.Assertions.assertTrue
 
 class LineagePluginSanityTest {
-    private static final String XML_PLUGIN_VERSION = '0.1.15'
-    private static final String OOXML_PLUGIN_VERSION = '0.1.12'
-    private static final String PYTHON_PLUGIN_VERSION = '0.1.4'
-    private static final String ANTLR_JAVA_PLUGIN_VERSION = '0.1.4'
-    private static final String ANTLR_PLSQL_PLUGIN_VERSION = '0.1.8'
+    private static final String XML_PLUGIN_VERSION = '1.0.0'
+    private static final String OOXML_PLUGIN_VERSION = '1.0.0'
+    private static final String PYTHON_PLUGIN_VERSION = '1.0.0'
+    private static final String ANTLR_JAVA_PLUGIN_VERSION = '1.0.0'
+    private static final String ANTLR_PLSQL_PLUGIN_VERSION = '1.0.0'
 
     @TempDir
     File testProjectDir
@@ -106,14 +106,38 @@ class LineagePluginSanityTest {
     }
 
     private static GradleRunner runner(File projectDir) {
+        def testKitDir = new File(System.getProperty('java.io.tmpdir'), "lineage-gradle-testkit/${java.util.UUID.randomUUID()}")
+        testKitDir.mkdirs()
         GradleRunner.create()
                 .withProjectDir(projectDir)
+                .withTestKitDir(testKitDir)
                 .withPluginClasspath()
                 .forwardOutput()
     }
 
     private static void writeSettingsWithBuilds(File projectDir) {
+        def workspaceRoot = new File(System.getProperty('user.dir')).parentFile.absolutePath.replace('\\', '\\\\')
         new File(projectDir, 'settings.gradle').text = """
+pluginManagement {
+  repositories {
+    gradlePluginPortal()
+    mavenCentral()
+  }
+  def workspaceRoot = file('${workspaceRoot}')
+  [
+    'gradle-xml-plugin',
+    'gradle-ooxml-plugin',
+    'gradle-python-plugin',
+    'gradle-antlr-java-plugin',
+    'gradle-antlr-plsql-plugin'
+  ].each { pluginBuildName ->
+    def candidate = new File(workspaceRoot, pluginBuildName)
+    if (candidate.isDirectory()) {
+      includeBuild(candidate.absolutePath)
+    }
+  }
+}
+
 rootProject.name = 'lineage-plugin-sanity'
 """.stripIndent()
     }

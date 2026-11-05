@@ -8,7 +8,7 @@ import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 import static org.junit.jupiter.api.Assertions.assertEquals
 
 class LineagePipelineXmlSmokeTest {
-    private static final String XML_PLUGIN_VERSION = '0.1.15'
+    private static final String XML_PLUGIN_VERSION = '1.0.0'
 
     @TempDir
     File testProjectDir
@@ -40,14 +40,29 @@ class LineagePipelineXmlSmokeTest {
     }
 
     private static GradleRunner runner(File projectDir) {
+        def testKitDir = new File(System.getProperty('java.io.tmpdir'), "lineage-gradle-testkit/${java.util.UUID.randomUUID()}")
+        testKitDir.mkdirs()
         GradleRunner.create()
                 .withProjectDir(projectDir)
+                .withTestKitDir(testKitDir)
                 .withPluginClasspath()
                 .forwardOutput()
     }
 
     private static void writeSettings(File projectDir) {
+        def workspaceRoot = new File(System.getProperty('user.dir')).parentFile.absolutePath.replace('\\', '\\\\')
         new File(projectDir, 'settings.gradle').text = """
+pluginManagement {
+  repositories {
+    gradlePluginPortal()
+    mavenCentral()
+  }
+  def localXmlPlugin = new File(file('${workspaceRoot}'), 'gradle-xml-plugin')
+  if (localXmlPlugin.isDirectory()) {
+    includeBuild(localXmlPlugin.absolutePath)
+  }
+}
+
 rootProject.name = 'lineage-xml-smoke'
 """.stripIndent()
     }

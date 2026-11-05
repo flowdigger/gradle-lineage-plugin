@@ -197,13 +197,26 @@ publishing {
 }
 
 signing {
-	required = { gradle.taskGraph.hasTask('publish') }
-	def signingKey = findProperty('signingKey')
-	def signingPassword = findProperty('signingPassword')
-	if (signingKey && signingPassword) {
-		useInMemoryPgpKeys(signingKey, signingPassword)
-		sign publishing.publications
+	def signingKey = providers.gradleProperty('signingKey').orNull
+	def signingPassword = providers.gradleProperty('signingPassword').orNull
+	def signingKeyId = providers.gradleProperty('signingKeyId').orNull
+	def validKeyIdPattern = ~/(?i)^[0-9a-f]{8}([0-9a-f]{8})?$/
+	def normalizedSigningKeyId = signingKeyId
+			?.trim()
+			?.replaceFirst(/^(?i)0x/, '')
+	if (!(normalizedSigningKeyId ==~ validKeyIdPattern)) {
+		normalizedSigningKeyId = null
 	}
+	if (signingKey && signingPassword) {
+		if (normalizedSigningKeyId) {
+			useInMemoryPgpKeys(normalizedSigningKeyId, signingKey, signingPassword)
+		} else {
+			useInMemoryPgpKeys(signingKey, signingPassword)
+		}
+	} else {
+		useGpgCmd()
+	}
+	sign publishing.publications.withType(MavenPublication)
 }
 
 tasks.register('stageCentralBundleRepo', Sync) {
