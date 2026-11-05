@@ -65,7 +65,7 @@ Internal wiring now split by responsibility:
 Sanity coverage:
 - Gradle TestKit task-graph and clean-behavior tests
 - XML smoke tests using `gradle-xml-plugin` XSpec/Schematron tasks for representative pipeline assets
-- Unit test fixtures resolve companion Flowdigger plugin builds from sibling local checkouts first (`../gradle-xml-plugin`, `../gradle-ooxml-plugin`, `../gradle-python-plugin`, `../gradle-antlr-java-plugin`, `../gradle-antlr-plsql-plugin`), then fall back to Gradle Plugin Portal `1.0.0` artifacts
+- Unit test fixtures embed stub companion plugin IDs/tasks under per-test `buildSrc`, so TestKit scenarios run offline and do not depend on external plugin publishing
 
 ---
 
