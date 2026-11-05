@@ -20,7 +20,6 @@ checkstyle {
 }
 
 repositories {
-	gradlePluginPortal()
 	mavenCentral()
 }
 
@@ -35,7 +34,6 @@ java {
 subprojects {
 	apply plugin: 'groovy'
 	repositories {
-		gradlePluginPortal()
 		mavenCentral()
 	}
 	dependencies {
@@ -164,6 +162,36 @@ gradlePlugin {
 				'gradle-plugin',
 				'pipeline'
 			])
+		}
+	}
+}
+
+publishing {
+	publications.withType(MavenPublication).configureEach {
+		pom {
+			name = 'Lineage pipeline conventions plugin'
+			description = 'Externalized and parameterized conventions for 1.parse..9.publish lineage pipeline'
+			url = 'https://github.com/flowdigger/gradle-lineage-plugin'
+
+			licenses {
+				license {
+					name = 'MIT License'
+					url = 'https://opensource.org/licenses/MIT'
+				}
+			}
+
+			developers {
+				developer {
+					id = 'flowdigger'
+					name = 'Flowdigger'
+				}
+			}
+
+			scm {
+				connection = 'scm:git:https://github.com/flowdigger/gradle-lineage-plugin.git'
+				developerConnection = 'scm:git:ssh://git@github.com/flowdigger/gradle-lineage-plugin.git'
+				url = 'https://github.com/flowdigger/gradle-lineage-plugin'
+			}
 		}
 	}
 }

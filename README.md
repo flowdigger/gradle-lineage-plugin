@@ -76,16 +76,15 @@ Minimal example:
 
 plugins {
   id 'base'
-  id 'org.flowdigger.gradle.lineage' version '0.1.0'
-  id 'org.flowdigger.gradle.xml' version '0.1.15'
-  id 'org.flowdigger.gradle.antlr.plsql' version '0.1.8'
-  id 'org.flowdigger.gradle.antlr.java' version '0.1.4'
-  id 'org.flowdigger.gradle.ooxml' version '0.1.12' apply false
-  id 'org.flowdigger.gradle.python' version '0.1.4' apply false
+  id 'org.flowdigger.gradle.lineage' version '1.0.0'
+  id 'org.flowdigger.gradle.xml' version '1.0.0'
+  id 'org.flowdigger.gradle.antlr.plsql' version '1.0.0'
+  id 'org.flowdigger.gradle.antlr.java' version '1.0.0'
+  id 'org.flowdigger.gradle.ooxml' version '1.0.0' apply false
+  id 'org.flowdigger.gradle.python' version '1.0.0' apply false
 }
 
 repositories {
-  gradlePluginPortal()
   mavenCentral()
 }
 
