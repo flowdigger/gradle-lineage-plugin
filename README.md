@@ -1,17 +1,16 @@
-# Gradle Lineage Plugin (`name.jurgenei.gradle.lineage`)
+# Gradle Lineage Plugin (`org.flowdigger.gradle.lineage`)
 
 ![Conformance](https://img.shields.io/badge/Conformance-Check--All%20Passing-brightgreen)
 
-[![Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/name.jurgenei.gradle.lineage?label=Plugin%20Portal)](https://plugins.gradle.org/plugin/name.jurgenei.gradle.lineage)
-[![Build and Test](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/gradle-build.yml/badge.svg)](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/gradle-build.yml)
-[![JUnit Report](https://img.shields.io/badge/JUnit-Report-blue?logo=githubactions)](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/gradle-build.yml)
-[![Coverage CI](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/coverage.yml/badge.svg)](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/coverage.yml)
-[![CodeQL](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/codeql.yml/badge.svg)](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/codeql.yml)
-[![Dependency Check](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/dependency-check.yml/badge.svg)](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/dependency-check.yml)
-[![SpotBugs Security](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/spotbugs-security.yml/badge.svg)](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/spotbugs-security.yml)
-[![Checkstyle](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/checkstyle.yml/badge.svg)](https://github.com/jurgenei/gradle-lineage-plugin/actions/workflows/checkstyle.yml)
-[![Dependabot](https://img.shields.io/badge/dependabot-enabled-025E8C?logo=dependabot)](https://github.com/jurgenei/gradle-lineage-plugin/security/dependabot)
-[![Coverage](https://codecov.io/gh/jurgenei/gradle-lineage-plugin/graph/badge.svg?branch=main)](https://codecov.io/gh/jurgenei/gradle-lineage-plugin)
+[![Build](https://github.com/flowdigger/gradle-lineage-plugin/actions/workflows/ci.yml/badge.svg)](https://github.com/flowdigger/gradle-lineage-plugin/actions/workflows/ci.yml)
+[![Release](https://github.com/flowdigger/gradle-lineage-plugin/actions/workflows/release.yml/badge.svg)](https://github.com/flowdigger/gradle-lineage-plugin/actions/workflows/release.yml)
+[![Coverage CI](https://github.com/flowdigger/gradle-lineage-plugin/actions/workflows/coverage.yml/badge.svg)](https://github.com/flowdigger/gradle-lineage-plugin/actions/workflows/coverage.yml)
+[![CodeQL](https://github.com/flowdigger/gradle-lineage-plugin/actions/workflows/codeql.yml/badge.svg)](https://github.com/flowdigger/gradle-lineage-plugin/actions/workflows/codeql.yml)
+[![Dependency Check](https://github.com/flowdigger/gradle-lineage-plugin/actions/workflows/dependency-check.yml/badge.svg)](https://github.com/flowdigger/gradle-lineage-plugin/actions/workflows/dependency-check.yml)
+[![SpotBugs Security](https://github.com/flowdigger/gradle-lineage-plugin/actions/workflows/spotbugs-security.yml/badge.svg)](https://github.com/flowdigger/gradle-lineage-plugin/actions/workflows/spotbugs-security.yml)
+[![Dependabot](https://img.shields.io/badge/dependabot-enabled-025E8C?logo=dependabot)](https://github.com/flowdigger/gradle-lineage-plugin/security/dependabot)
+[![Coverage](https://codecov.io/gh/flowdigger/gradle-lineage-plugin/graph/badge.svg?branch=main)](https://codecov.io/gh/flowdigger/gradle-lineage-plugin?branch=main)
+[![Maven Central](https://img.shields.io/maven-central/v/org.flowdigger.gradle/gradle-lineage-plugin.svg)](https://search.maven.org/artifact/org.flowdigger.gradle/gradle-lineage-plugin)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/java-21+-green.svg)](https://www.oracle.com/java/)
 [![Gradle](https://img.shields.io/badge/gradle-9.5+-blue.svg)](https://gradle.org/)
@@ -66,6 +65,7 @@ Internal wiring now split by responsibility:
 Sanity coverage:
 - Gradle TestKit task-graph and clean-behavior tests
 - XML smoke tests using `gradle-xml-plugin` XSpec/Schematron tasks for representative pipeline assets
+- Unit test fixtures embed stub companion plugin IDs/tasks under per-test `buildSrc`, so TestKit scenarios run offline and do not depend on external plugin publishing
 
 ---
 
@@ -77,16 +77,15 @@ Minimal example:
 
 plugins {
   id 'base'
-  id 'name.jurgenei.gradle.lineage' version '0.1.0'
-  id 'name.jurgenei.gradle.xml' version '0.1.15'
-  id 'name.jurgenei.gradle.antlr.plsql' version '0.1.8'
-  id 'name.jurgenei.gradle.antlr.java' version '0.1.4'
-  id 'name.jurgenei.gradle.ooxml' version '0.1.12' apply false
-  id 'name.jurgenei.gradle.python' version '0.1.4' apply false
+  id 'org.flowdigger.gradle.lineage' version '1.0.0'
+  id 'org.flowdigger.gradle.xml' version '1.0.0'
+  id 'org.flowdigger.gradle.antlr.plsql' version '1.0.0'
+  id 'org.flowdigger.gradle.antlr.java' version '1.0.0'
+  id 'org.flowdigger.gradle.ooxml' version '1.0.0' apply false
+  id 'org.flowdigger.gradle.python' version '1.0.0' apply false
 }
 
 repositories {
-  gradlePluginPortal()
   mavenCentral()
 }
 
@@ -106,15 +105,15 @@ lineagePipeline {
 
   repos {
     repo {
-      uri.set("https://github.com/jurgenei/gradle-lineage-plugin")
+      uri.set("https://github.com/flowdigger/gradle-lineage-plugin")
       sourceSet('sql-sample') {
-        parserPlugin.set("name.jurgenei.gradle.antlr.plsql")
+        parserPlugin.set("org.flowdigger.gradle.antlr.plsql")
         sourceDirectory.set(file('samples/java-plsql/src/main/sql'))
         schemas.set(['dsa'])
         includes.set(["**/*.sql"])
       }
       sourceSet('java-sample') {
-        parserPlugin.set("name.jurgenei.gradle.antlr.java")
+        parserPlugin.set("org.flowdigger.gradle.antlr.java")
         sourceDirectory.set(file('samples/java-plsql/src/main/java'))
         includes.set(["**/*.java"])
       }
@@ -172,12 +171,10 @@ Task graph only:
 ./gradlew -m publishLineage
 ```
 
-Publish plugin to Gradle Plugin Portal:
+Release to Maven Central:
 
 ```bash
-./gradlew publishToPluginPortal \
-  -Pgradle.publish.key=<key> \
-  -Pgradle.publish.secret=<secret>
+./gradlew clean packageCentralBundle
 ```
 
 Skip validation guards (local diagnostics only):
@@ -264,5 +261,5 @@ build/lineage-uniform/5.merge/sql-index
 Tune parser concurrency in conventions plugin:
 
 ```text
-build-logic/src/main/groovy/name/jurgenei/lineage/LineageConventionsPlugin.groovy
+build-logic/src/main/groovy/org/flowdigger/lineage/LineageConventionsPlugin.groovy
 ```

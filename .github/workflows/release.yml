@@ -1,0 +1,27 @@
+name: Release to Maven Central
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "release/**"
+      - "snapshot/**"
+      - "snapshots/**"
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    permissions:
+      contents: read
+    uses: flowdigger/github-workflows/.github/workflows/maven-central-release.yml@main
+    with:
+      trigger-event: ${{ github.event_name }}
+      java-version: "21"
+      central-namespace: "org.flowdigger.gradle"
+      clone-composite-build-deps: true
+      upload-artifacts: true
+      publish-snapshot-branches: true
+      snapshot-branch-prefix: "refs/heads/snapshot/"
+      snapshot-publish-task: "clean publish"
+    secrets: inherit

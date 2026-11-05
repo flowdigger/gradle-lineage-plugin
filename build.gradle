@@ -3,25 +3,23 @@ plugins {
 	id 'java-gradle-plugin'
 	id 'jacoco'
 	id 'maven-publish'
+	id 'signing'
+	id 'checkstyle'
 	id 'com.gradle.plugin-publish' version '2.2.1'
 	id 'org.owasp.dependencycheck' version '13.0.0'
-	id 'com.github.spotbugs' version '6.5.13' apply false
+	id 'com.github.spotbugs' version '6.5.13'
 	id 'com.diffplug.spotless' version '8.10.4'
 }
 
-group = 'name.jurgenei.gradle'
-version = '0.1.0'
+group = 'org.flowdigger.gradle'
+version = '1.0.0'
 
-def enableSpotbugs = gradle.startParameter.taskNames
-		.collect { it.toLowerCase() }
-		.any { it.contains('spotbugs') || it.endsWith('allsecuritychecks') }
-
-if (enableSpotbugs) {
-	apply plugin: 'com.github.spotbugs'
+checkstyle {
+	toolVersion = '10.26.1'
+	configFile = file('checkstyle.xml')
 }
 
 repositories {
-	gradlePluginPortal()
 	mavenCentral()
 }
 
@@ -36,7 +34,6 @@ java {
 subprojects {
 	apply plugin: 'groovy'
 	repositories {
-		gradlePluginPortal()
 		mavenCentral()
 	}
 	dependencies {
@@ -117,6 +114,11 @@ dependencyCheck {
 	if (file('dependency-check-suppressions.xml').exists()) {
 		suppressionFile = file('dependency-check-suppressions.xml').absolutePath
 	}
+	analyzers {
+		ossIndex {
+			enabled = false
+		}
+	}
 
 	nvd {
 		apiKey = providers.gradleProperty('org.owasp.dependencycheck.nvd.api.key').orNull
@@ -143,12 +145,12 @@ plugins.withId('com.github.spotbugs') {
 }
 
 gradlePlugin {
-	website = 'https://github.com/jurgenei/gradle-lineage-plugin'
-	vcsUrl = 'https://github.com/jurgenei/gradle-lineage-plugin.git'
+	website = 'https://github.com/flowdigger/gradle-lineage-plugin'
+	vcsUrl = 'https://github.com/flowdigger/gradle-lineage-plugin.git'
 	plugins {
 		lineageConventions {
-			id = 'name.jurgenei.gradle.lineage'
-			implementationClass = 'name.jurgenei.gradle.lineage.LineageConventionsPlugin'
+			id = 'org.flowdigger.gradle.lineage'
+			implementationClass = 'org.flowdigger.gradle.lineage.LineageConventionsPlugin'
 			displayName = 'Lineage pipeline conventions plugin'
 			description = 'Externalized and parameterized conventions for the 1.parse..9.publish lineage pipeline.'
 			tags.set([
@@ -164,8 +166,107 @@ gradlePlugin {
 	}
 }
 
-tasks.register('publishToPluginPortal') {
-	group = 'publishing'
-	description = 'Publishes plugin to Gradle Plugin Portal.'
-	dependsOn tasks.named('publishPlugins')
+publishing {
+	publications.withType(MavenPublication).configureEach {
+		pom {
+			name = 'Lineage pipeline conventions plugin'
+			description = 'Externalized and parameterized conventions for 1.parse..9.publish lineage pipeline'
+			url = 'https://github.com/flowdigger/gradle-lineage-plugin'
+
+			licenses {
+				license {
+					name = 'MIT License'
+					url = 'https://opensource.org/licenses/MIT'
+				}
+			}
+
+			developers {
+				developer {
+					id = 'flowdigger'
+					name = 'Flowdigger'
+				}
+			}
+
+			scm {
+				connection = 'scm:git:https://github.com/flowdigger/gradle-lineage-plugin.git'
+				developerConnection = 'scm:git:ssh://git@github.com/flowdigger/gradle-lineage-plugin.git'
+				url = 'https://github.com/flowdigger/gradle-lineage-plugin'
+			}
+		}
+	}
+}
+
+signing {
+	def signingKey = providers.gradleProperty('signingKey').orNull
+	def signingPassword = providers.gradleProperty('signingPassword').orNull
+	def signingKeyId = providers.gradleProperty('signingKeyId').orNull
+	def validKeyIdPattern = ~/(?i)^[0-9a-f]{8}([0-9a-f]{8})?$/
+	def normalizedSigningKeyId = signingKeyId
+			?.trim()
+			?.replaceFirst(/^(?i)0x/, '')
+	if (!(normalizedSigningKeyId ==~ validKeyIdPattern)) {
+		normalizedSigningKeyId = null
+	}
+	if (signingKey && signingPassword) {
+		if (normalizedSigningKeyId) {
+			useInMemoryPgpKeys(normalizedSigningKeyId, signingKey, signingPassword)
+		} else {
+			useInMemoryPgpKeys(signingKey, signingPassword)
+		}
+	} else {
+		useGpgCmd()
+	}
+	sign publishing.publications.withType(MavenPublication)
+}
+
+tasks.register('stageCentralBundleRepo', Sync) {
+	dependsOn tasks.named('publishToMavenLocal')
+	def artifactBaseDir = file("${System.getProperty('user.home')}/.m2/repository/org/flowdigger/gradle/gradle-lineage-plugin")
+	def artifactVersionDir = file("${artifactBaseDir}/${project.version}")
+	from(artifactVersionDir)
+	into(layout.buildDirectory.dir("central-staging-repo/org/flowdigger/gradle/gradle-lineage-plugin/${project.version}"))
+	doFirst {
+		if (!artifactVersionDir.exists()) {
+			throw new GradleException("Expected local Maven artifact version directory not found: ${artifactVersionDir}")
+		}
+	}
+}
+
+tasks.register('generateCentralBundleChecksums') {
+	dependsOn tasks.named('stageCentralBundleRepo')
+	doLast {
+		def stagedVersionDir = layout.buildDirectory
+				.dir("central-staging-repo/org/flowdigger/gradle/gradle-lineage-plugin/${project.version}")
+				.get()
+				.asFile
+		if (!stagedVersionDir.exists()) {
+			throw new GradleException("Expected staged version directory not found: ${stagedVersionDir}")
+		}
+		def checksum = { File file, String algorithm ->
+			def digest = java.security.MessageDigest.getInstance(algorithm)
+			file.withInputStream { input ->
+				byte[] buffer = new byte[8192]
+				int read
+				while ((read = input.read(buffer)) != -1) {
+					digest.update(buffer, 0, read)
+				}
+			}
+			digest.digest().collect { String.format('%02x', it & 0xff) }.join('')
+		}
+		stagedVersionDir.eachFileRecurse { file ->
+			if (file.isFile() && !file.name.endsWith('.md5') && !file.name.endsWith('.sha1')) {
+				new File(file.parentFile, "${file.name}.md5").text = "${checksum(file, 'MD5')}\n"
+				new File(file.parentFile, "${file.name}.sha1").text = "${checksum(file, 'SHA-1')}\n"
+			}
+		}
+	}
+}
+
+tasks.register('packageCentralBundle', Zip) {
+	dependsOn tasks.named('generateCentralBundleChecksums')
+	archiveBaseName.set('gradle-lineage-plugin')
+	archiveVersion.set(project.version.toString())
+	archiveClassifier.set('central-bundle')
+	destinationDirectory.set(layout.buildDirectory.dir('central-bundle'))
+	from(layout.buildDirectory.dir('central-staging-repo'))
 }
