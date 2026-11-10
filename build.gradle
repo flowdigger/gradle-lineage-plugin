@@ -147,6 +147,11 @@ gradlePlugin {
 	}
 }
 
+def hasSigningMaterial = providers.gradleProperty('signingKey').present && providers.gradleProperty('signingPassword').present
+tasks.withType(org.gradle.plugins.signing.Sign).configureEach {
+	onlyIf { hasSigningMaterial }
+}
+
 publishing {
 	publications.withType(MavenPublication).configureEach {
 		pom {
@@ -174,17 +179,6 @@ publishing {
 				url = 'https://github.com/flowdigger/gradle-lineage-plugin'
 			}
 		}
-	}
-}
-
-if (providers.gradleProperty('signingKey').present && providers.gradleProperty('signingPassword').present) {
-	def signPublicationTasks = tasks.matching {
-		it.name.startsWith('sign') && it.name.endsWith('Publication')
-	}
-	tasks.matching {
-		it.name.startsWith('publish') && it.name.endsWith('PublicationToMavenLocal')
-	}.configureEach {
-		dependsOn signPublicationTasks
 	}
 }
 
