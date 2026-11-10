@@ -19,3 +19,6 @@ jobs:
     with:
       trigger-event: ${{ github.event_name }}
       upload-reports: true
+      clone-flowdigger-gradle: true
+      flowdigger-gradle-ref: "main"
+      upload-reports: true

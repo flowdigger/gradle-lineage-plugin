@@ -3,10 +3,11 @@ plugins {
 	id 'java-gradle-plugin'
 	id 'jacoco'
 	id 'maven-publish'
-	id 'signing'
+	id 'org.flowdigger.maven-publish'
 	id 'checkstyle'
 	id 'com.gradle.plugin-publish' version '2.2.1'
 	id 'org.owasp.dependencycheck' version '13.0.0'
+	id 'org.flowdigger.dependency-check'
 	id 'com.github.spotbugs' version '6.5.13'
 	id 'com.diffplug.spotless' version '8.10.4'
 }
@@ -106,26 +107,6 @@ spotless {
 	}
 }
 
-dependencyCheck {
-	formats = ['HTML', 'JSON', 'XML']
-	failBuildOnCVSS = 7.0f
-	skipConfigurations = ['spotbugs', 'spotbugsPlugins']
-
-	if (file('dependency-check-suppressions.xml').exists()) {
-		suppressionFile = file('dependency-check-suppressions.xml').absolutePath
-	}
-	analyzers {
-		ossIndex {
-			enabled = false
-		}
-	}
-
-	nvd {
-		apiKey = providers.gradleProperty('org.owasp.dependencycheck.nvd.api.key').orNull
-				?: System.getenv('NVD_API_KEY')
-	}
-}
-
 plugins.withId('com.github.spotbugs') {
 	dependencies {
 		spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.14.0'
@@ -149,7 +130,7 @@ gradlePlugin {
 	vcsUrl = 'https://github.com/flowdigger/gradle-lineage-plugin.git'
 	plugins {
 		lineageConventions {
-			id = 'org.flowdigger.gradle.lineage'
+			id = 'org.flowdigger.lineage'
 			implementationClass = 'org.flowdigger.gradle.lineage.LineageConventionsPlugin'
 			displayName = 'Lineage pipeline conventions plugin'
 			description = 'Externalized and parameterized conventions for the 1.parse..9.publish lineage pipeline.'
@@ -196,27 +177,15 @@ publishing {
 	}
 }
 
-signing {
-	def signingKey = providers.gradleProperty('signingKey').orNull
-	def signingPassword = providers.gradleProperty('signingPassword').orNull
-	def signingKeyId = providers.gradleProperty('signingKeyId').orNull
-	def validKeyIdPattern = ~/(?i)^[0-9a-f]{8}([0-9a-f]{8})?$/
-	def normalizedSigningKeyId = signingKeyId
-			?.trim()
-			?.replaceFirst(/^(?i)0x/, '')
-	if (!(normalizedSigningKeyId ==~ validKeyIdPattern)) {
-		normalizedSigningKeyId = null
+if (providers.gradleProperty('signingKey').present && providers.gradleProperty('signingPassword').present) {
+	def signPublicationTasks = tasks.matching {
+		it.name.startsWith('sign') && it.name.endsWith('Publication')
 	}
-	if (signingKey && signingPassword) {
-		if (normalizedSigningKeyId) {
-			useInMemoryPgpKeys(normalizedSigningKeyId, signingKey, signingPassword)
-		} else {
-			useInMemoryPgpKeys(signingKey, signingPassword)
-		}
-	} else {
-		useGpgCmd()
+	tasks.matching {
+		it.name.startsWith('publish') && it.name.endsWith('PublicationToMavenLocal')
+	}.configureEach {
+		dependsOn signPublicationTasks
 	}
-	sign publishing.publications
 }
 
 def centralStagingRoot = layout.buildDirectory.dir('central-staging-repo')

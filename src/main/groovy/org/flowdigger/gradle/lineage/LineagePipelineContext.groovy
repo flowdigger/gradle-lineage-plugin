@@ -42,14 +42,14 @@ class LineagePipelineContext {
     Closure<String> toCollectionUri
 
     static LineagePipelineContext create(Project project, Map<String, Object> cfg, LineagePipelineExtension ext) {
-        project.pluginManager.apply('org.flowdigger.gradle.xml')
-        project.pluginManager.apply('org.flowdigger.gradle.ooxml')
-        project.pluginManager.apply('org.flowdigger.gradle.python')
+        project.pluginManager.apply('org.flowdigger.xml')
+        project.pluginManager.apply('org.flowdigger.ooxml')
+        project.pluginManager.apply('org.flowdigger.python')
         if (cfg.sqlEnabled) {
-            project.pluginManager.apply('org.flowdigger.gradle.antlr.plsql')
+            project.pluginManager.apply('org.flowdigger.antlr.plsql')
         }
         if (cfg.javaEnabled) {
-            project.pluginManager.apply('org.flowdigger.gradle.antlr.java')
+            project.pluginManager.apply('org.flowdigger.antlr.java')
         }
 
         def ctx = new LineagePipelineContext(project: project, cfg: cfg, ext: ext)

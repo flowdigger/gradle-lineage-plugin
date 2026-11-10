@@ -27,6 +27,12 @@ jobs:
           java-version: '21'
           cache: gradle
 
+      - name: Clone flowdigger-gradle for composite build
+        run: |
+          if [ ! -d ../flowdigger-gradle/.git ]; then
+            git clone --depth 1 --branch main https://github.com/flowdigger/flowdigger-gradle.git ../flowdigger-gradle
+          fi
+
       - name: Grant execute permission for Gradle wrapper
         run: chmod +x ./gradlew
 

@@ -22,7 +22,7 @@ class LineageConfigResolverTest {
         ext.repos.repo {
             uri.set('https://github.com/example/demo-lineage.git')
             sourceSet('sql') {
-                parserPlugin.set('org.flowdigger.gradle.antlr.plsql')
+                parserPlugin.set('org.flowdigger.antlr.plsql')
                 sourceDirectory.set('sql')
                 schemas.set('SDP', 'DSA')
                 includes.set(['**/*.sql'])
@@ -47,7 +47,7 @@ class LineageConfigResolverTest {
         ext.repos.repo {
             uri.set('https://github.com/example/demo-lineage.git')
             sourceSet('sql') {
-                parserPlugin.set('org.flowdigger.gradle.antlr.plsql')
+                parserPlugin.set('org.flowdigger.antlr.plsql')
                 sourceDirectory.set('sql')
                 includes.set(['**/*.sql'])
             }
@@ -67,7 +67,7 @@ class LineageConfigResolverTest {
         ext.repos.repo {
             uri.set('https://github.com/example/demo-lineage.git')
             sourceSet('sql') {
-                parserPlugin.set('org.flowdigger.gradle.antlr.plsql')
+                parserPlugin.set('org.flowdigger.antlr.plsql')
                 sourceDirectory.set('sql')
                 includes.set(['**/*.sql'])
             }
@@ -89,7 +89,7 @@ class LineageConfigResolverTest {
         ext.repos.repo {
             uri.set('https://github.com/example/demo-lineage.git')
             sourceSet('sql') {
-                parserPlugin.set('org.flowdigger.gradle.antlr.plsql')
+                parserPlugin.set('org.flowdigger.antlr.plsql')
                 sourceDirectory.set('sql')
                 schemas.set('', 'buss')
                 includes.set(['**/*.sql'])
@@ -109,7 +109,7 @@ class LineageConfigResolverTest {
         ext.repos.repo {
             uri.set('https://github.com/example/demo-lineage.git')
             sourceSet('java') {
-                parserPlugin.set('org.flowdigger.gradle.antlr.java')
+                parserPlugin.set('org.flowdigger.antlr.java')
                 sourceDirectory.set('src/main/java')
                 includes.set(['**/*.java'])
             }
@@ -129,7 +129,7 @@ class LineageConfigResolverTest {
         ext.repos.repo {
             uri.set('https://github.com/example/demo-lineage.git')
             sourceSet('java') {
-                parserPlugin.set('org.flowdigger.gradle.antlr.java')
+                parserPlugin.set('org.flowdigger.antlr.java')
                 sourceDirectory.set('src/main/java')
                 includes.set(['**/*.java'])
             }
