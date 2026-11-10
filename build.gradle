@@ -147,7 +147,13 @@ gradlePlugin {
 	}
 }
 
-def hasSigningMaterial = providers.gradleProperty('signingKey').present && providers.gradleProperty('signingPassword').present
+def signingKeyProvider = providers.gradleProperty('flowdigger.signing.key')
+		.orElse(providers.environmentVariable('SIGNING_KEY'))
+		.orElse(providers.gradleProperty('signingKey'))
+def signingPasswordProvider = providers.gradleProperty('flowdigger.signing.password')
+		.orElse(providers.environmentVariable('SIGNING_PASSWORD'))
+		.orElse(providers.gradleProperty('signingPassword'))
+def hasSigningMaterial = signingKeyProvider.present && signingPasswordProvider.present
 tasks.withType(org.gradle.plugins.signing.Sign).configureEach {
 	onlyIf { hasSigningMaterial }
 }
