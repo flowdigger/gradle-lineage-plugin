@@ -1,3 +1,11 @@
+pluginManagement {
+	includeBuild('../flowdigger-gradle')
+	repositories {
+		gradlePluginPortal()
+		mavenCentral()
+	}
+}
+
 rootProject.name = "lineage-build-logic"
 
 include(":pipeline:step1-parse")

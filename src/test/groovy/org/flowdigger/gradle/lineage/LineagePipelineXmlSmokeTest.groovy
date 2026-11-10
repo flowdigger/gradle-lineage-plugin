@@ -58,7 +58,7 @@ rootProject.name = 'lineage-xml-smoke'
         def pluginRoot = new File(System.getProperty('user.dir'))
         new File(projectDir, 'build.gradle').text = """
 plugins {
-  id 'org.flowdigger.gradle.xml'
+  id 'org.flowdigger.xml'
 }
 
 tasks.register('runXSpecSmoke', org.flowdigger.gradle.xml.XSpecTask) {
@@ -87,7 +87,7 @@ ext.pipelineRoot = '${new File(pluginRoot, 'pipeline').absolutePath.replace('\\'
     private static void writeSchematronBuild(File projectDir) {
         new File(projectDir, 'build.gradle').text = """
 plugins {
-  id 'org.flowdigger.gradle.xml'
+  id 'org.flowdigger.xml'
 }
 
 tasks.register('runSchematronSmoke', org.flowdigger.gradle.xml.SchematronTask) {
@@ -133,7 +133,7 @@ dependencies {
 gradlePlugin {
   plugins {
     xml {
-      id = 'org.flowdigger.gradle.xml'
+      id = 'org.flowdigger.xml'
       implementationClass = 'org.flowdigger.stub.NoopXmlPlugin'
     }
   }
@@ -206,7 +206,7 @@ class MutableStub {
 '''.stripIndent()
 
         new File(buildSrcDir, 'src/main/groovy/org/flowdigger/gradle/xml/Tasks.groovy').text = '''
-package org.flowdigger.gradle.xml
+        package org.flowdigger.gradle.xml
 
 import org.flowdigger.stub.DynamicStubTask
 

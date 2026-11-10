@@ -27,6 +27,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+
+      - name: Clone flowdigger-gradle for composite build
+        run: |
+          if [ ! -d ../flowdigger-gradle/.git ]; then
+            git clone --depth 1 --branch main https://github.com/flowdigger/flowdigger-gradle.git ../flowdigger-gradle
+          fi
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
         with:

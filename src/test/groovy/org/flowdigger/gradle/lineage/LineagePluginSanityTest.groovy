@@ -123,12 +123,12 @@ rootProject.name = 'lineage-plugin-sanity'
         new File(projectDir, 'build.gradle').text = """
 plugins {
   id 'base'
-  id 'org.flowdigger.gradle.xml' apply false
-  id 'org.flowdigger.gradle.ooxml' apply false
-  id 'org.flowdigger.gradle.python' apply false
-  id 'org.flowdigger.gradle.antlr.java' apply false
-  id 'org.flowdigger.gradle.antlr.plsql' apply false
-  id 'org.flowdigger.gradle.lineage'
+  id 'org.flowdigger.xml' apply false
+  id 'org.flowdigger.ooxml' apply false
+  id 'org.flowdigger.python' apply false
+  id 'org.flowdigger.antlr.java' apply false
+  id 'org.flowdigger.antlr.plsql' apply false
+  id 'org.flowdigger.lineage'
 }
 
 ext.set('lineagePluginPipelineRoot', '${pipelineRoot}')
@@ -142,7 +142,7 @@ ${optionalOverrideBlock}
       uri.set('https://github.com/example/demo-lineage.git')
       ref.set('main')
       sourceSet('java') {
-        parserPlugin.set('org.flowdigger.gradle.antlr.java')
+        parserPlugin.set('org.flowdigger.antlr.java')
         sourceDirectory.set(file('src/main/java'))
         includes.set(['**/*.java'])
       }
@@ -175,23 +175,23 @@ dependencies {
 gradlePlugin {
   plugins {
     xml {
-      id = 'org.flowdigger.gradle.xml'
+      id = 'org.flowdigger.xml'
       implementationClass = 'org.flowdigger.stub.NoopXmlPlugin'
     }
     ooxml {
-      id = 'org.flowdigger.gradle.ooxml'
+      id = 'org.flowdigger.ooxml'
       implementationClass = 'org.flowdigger.stub.NoopOoxmlPlugin'
     }
     python {
-      id = 'org.flowdigger.gradle.python'
+      id = 'org.flowdigger.python'
       implementationClass = 'org.flowdigger.stub.NoopPythonPlugin'
     }
     antlrJava {
-      id = 'org.flowdigger.gradle.antlr.java'
+      id = 'org.flowdigger.antlr.java'
       implementationClass = 'org.flowdigger.stub.NoopAntlrJavaPlugin'
     }
     antlrPlsql {
-      id = 'org.flowdigger.gradle.antlr.plsql'
+      id = 'org.flowdigger.antlr.plsql'
       implementationClass = 'org.flowdigger.stub.NoopAntlrPlsqlPlugin'
     }
   }

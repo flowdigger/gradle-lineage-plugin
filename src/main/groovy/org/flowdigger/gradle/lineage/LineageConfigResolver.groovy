@@ -4,7 +4,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.Project
 
 class LineageConfigResolver {
-    private static final String ANTLR_PLUGIN_ID = 'org.flowdigger.gradle.antlr'
+    private static final String ANTLR_PLUGIN_ID = 'org.flowdigger.antlr'
 
     static Map<String, Object> resolve(Project project, LineagePipelineExtension ext) {
         def parseBool = { Object v ->
