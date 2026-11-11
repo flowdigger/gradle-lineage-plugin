@@ -2,7 +2,6 @@ plugins {
 	id 'groovy-gradle-plugin'
 	id 'java-gradle-plugin'
 	id 'jacoco'
-	id 'maven-publish'
 	id 'org.flowdigger.maven-publish'
 	id 'checkstyle'
 	id 'com.gradle.plugin-publish' version '2.2.1'
@@ -13,7 +12,7 @@ plugins {
 }
 
 group = 'org.flowdigger.gradle'
-version = '1.0.1'
+version = '1.0.2'
 
 checkstyle {
 	toolVersion = '10.26.1'
@@ -186,63 +185,4 @@ publishing {
 			}
 		}
 	}
-}
-
-def centralStagingRoot = layout.buildDirectory.dir('central-staging-repo')
-def stageCentralBundleRepo = tasks.register('stageCentralBundleRepo', Sync) {
-	dependsOn tasks.named('publishToMavenLocal')
-	into(centralStagingRoot)
-
-	publishing.publications.withType(MavenPublication).all { publication ->
-		def publicationPath = "${publication.groupId.replace('.', '/')}/${publication.artifactId}/${publication.version}"
-		from(file("${System.getProperty('user.home')}/.m2/repository/${publicationPath}")) {
-			into(publicationPath)
-		}
-	}
-
-	doFirst {
-		publishing.publications.withType(MavenPublication).each { publication ->
-			def publicationPath = "${publication.groupId.replace('.', '/')}/${publication.artifactId}/${publication.version}"
-			def localPublicationDir = file("${System.getProperty('user.home')}/.m2/repository/${publicationPath}")
-			if (!localPublicationDir.exists()) {
-				throw new GradleException("Expected local Maven publication directory not found: ${localPublicationDir}")
-			}
-		}
-	}
-}
-
-def generateCentralBundleChecksums = tasks.register('generateCentralBundleChecksums') {
-	dependsOn stageCentralBundleRepo
-	doLast {
-		def stagedRepoDir = centralStagingRoot.get().asFile
-		if (!stagedRepoDir.exists()) {
-			throw new GradleException("Expected staged repository directory not found: ${stagedRepoDir}")
-		}
-		def checksum = { File file, String algorithm ->
-			def digest = java.security.MessageDigest.getInstance(algorithm)
-			file.withInputStream { input ->
-				byte[] buffer = new byte[8192]
-				int read
-				while ((read = input.read(buffer)) != -1) {
-					digest.update(buffer, 0, read)
-				}
-			}
-			digest.digest().collect { String.format('%02x', it & 0xff) }.join('')
-		}
-		stagedRepoDir.eachFileRecurse { file ->
-			if (file.isFile() && !file.name.endsWith('.md5') && !file.name.endsWith('.sha1')) {
-				new File(file.parentFile, "${file.name}.md5").text = "${checksum(file, 'MD5')}\n"
-				new File(file.parentFile, "${file.name}.sha1").text = "${checksum(file, 'SHA-1')}\n"
-			}
-		}
-	}
-}
-
-tasks.register('packageCentralBundle', Zip) {
-	dependsOn tasks.named('generateCentralBundleChecksums')
-	archiveBaseName.set('gradle-lineage-plugin')
-	archiveVersion.set(project.version.toString())
-	archiveClassifier.set('central-bundle')
-	destinationDirectory.set(layout.buildDirectory.dir('central-bundle'))
-	from(layout.buildDirectory.dir('central-staging-repo'))
 }
