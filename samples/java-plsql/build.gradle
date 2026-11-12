@@ -14,16 +14,16 @@ repositories {
 }
 
 def gSampleSourceRoot = rootProject.file('build/source').absolutePath
-def gSampleLineageBuildRoot = rootProject.file('build/lineage').absolutePath
+def gSampleBuildRoot = rootProject.file('build/lineage').absolutePath
 def gSampleArchitectureModelFile = rootProject.file('src/main/xml/architecture.xml').absolutePath
 
-println("Sample lineage build root: ${gSampleLineageBuildRoot}")
+println("Sample lineage build root: ${gSampleBuildRoot}")
 println("Sample source root: ${gSampleSourceRoot}")
 println("Sample architecture model file: ${gSampleArchitectureModelFile}")
 
 lineagePipeline {
     sourceRoot = gSampleSourceRoot
-    lineageBuildRoot = gSampleLineageBuildRoot
+    buildRoot = gSampleBuildRoot
     architectureModelFile = gSampleArchitectureModelFile
     skipLineageValidations = true
 

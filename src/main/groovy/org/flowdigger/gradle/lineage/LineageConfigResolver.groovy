@@ -12,12 +12,7 @@ class LineageConfigResolver {
             s in ['1', 'true', 'yes', 'y', 'on']
         }
         def sourceRoot = (ext.sourceRoot ?: project.rootProject.projectDir.parentFile.absolutePath).toString()
-        def defaultBuildRoot = (ext.lineageBuildRoot
-                ?: project.layout.buildDirectory.dir('lineage-uniform').get().asFile.absolutePath).toString()
-        def buildRoot = (project.findProperty('buildRoot')
-                ?: project.findProperty('lineageBuildRoot')
-                ?: project.providers.environmentVariable('LINEAGE_BUILD_ROOT').orNull
-                ?: defaultBuildRoot).toString()
+        def buildRoot = resolveBuildRoot(project, ext)
         def skipValidations = parseBool(project.findProperty('skipLineageValidations') ?: project.providers.environmentVariable('SKIP_LINEAGE_VALIDATIONS').orNull ?: ext.skipLineageValidations)
         def legacySchemaNames = normalizeSchemaNames(ext.schemaNames as List<?>, false)
         def architectureModelFile = (ext.architectureModelFile ?: "${sourceRoot}/architecture/vortex-archimate-risk.xml").toString()
@@ -136,6 +131,17 @@ class LineageConfigResolver {
                 architectureProcessedFile: architectureProcessedFile,
                 appSticherStylesheet: appSticherStylesheet
         ]
+    }
+
+    static String resolveBuildRoot(Project project, LineagePipelineExtension ext) {
+        def defaultBuildRoot = (ext.buildRoot
+                ?: ext.lineageBuildRoot
+                ?: project.layout.buildDirectory.dir('lineage-uniform').get().asFile.absolutePath).toString()
+        return (project.findProperty('buildRoot')
+                ?: project.findProperty('lineageBuildRoot')
+                ?: project.providers.environmentVariable('LINEAGE_BUILD_ROOT').orNull
+                ?: defaultBuildRoot)
+                .toString()
     }
 
     private static String parserKindForPlugin(String parserPluginId) {

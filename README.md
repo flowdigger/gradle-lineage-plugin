@@ -90,16 +90,16 @@ repositories {
 }
 
 def gSampleSourceRoot = rootProject.file('build/source').absolutePath
-def gSampleLineageBuildRoot = rootProject.file('build/lineage').absolutePath
+def gSampleBuildRoot = rootProject.file('build/lineage').absolutePath
 def gSampleArchitectureModelFile = rootProject.file('src/main/xml/architecture.xml').absolutePath
 
-println("Sample lineage build root: ${gSampleLineageBuildRoot}")
+println("Sample lineage build root: ${gSampleBuildRoot}")
 println("Sample source root: ${gSampleSourceRoot}")
 println("Sample architecture model file: ${gSampleArchitectureModelFile}")
 
 lineagePipeline {
   sourceRoot = gSampleSourceRoot
-  lineageBuildRoot = gSampleLineageBuildRoot
+  buildRoot = gSampleBuildRoot
   architectureModelFile = gSampleArchitectureModelFile
   skipLineageValidations = true
 
@@ -204,6 +204,24 @@ SKIP_LINEAGE_VALIDATIONS=true ./gradlew publishLineage
 | `7.validate-lineage` | Validate stitched lineage | `7.validate-lineage/*` |
 | `8.export` | Produce projections + layout | `8.export/{graphml,rdf,json,graph}` + app projections |
 | `9.publish` | Package final artifacts | `9.publish/artifacts` |
+
+---
+
+## `2.observe` organization
+
+`2.observe` keeps one lifecycle registrar and organizes internals by language/domain:
+
+- Groovy registrars:
+  - `step2/Step2ObserveTasksRegistrar.groovy` (lifecycle aggregation only)
+  - `step2/sql/*`, `step2/java/*`, `step2/config/*`, `step2/docs/*`
+- Stylesheets:
+  - `src/main/xsl/sql`
+  - `src/main/xsl/java`
+  - `src/main/xsl/config`
+  - `src/main/xsl/docs`
+  - `src/main/xsl/common`
+
+External task names and output contracts remain stable (`observeSql*`, `observeJava*`, `extractLineageObservations`, `2.observe/...`).
 
 ---
 

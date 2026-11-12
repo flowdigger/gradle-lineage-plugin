@@ -140,10 +140,29 @@ class LineageConfigResolverTest {
         assertEquals('lineageRepoRef/LINEAGE_REPO_REF override', cfg.repos[0].refSource)
     }
 
+    @Test
+    void "accepts legacy lineageBuildRoot extension property"() {
+        def project = ProjectBuilder.builder().withProjectDir(tempDir).build()
+        def ext = new LineagePipelineExtension()
+        ext.sourceRoot = tempDir.absolutePath
+        ext.lineageBuildRoot = new File(tempDir, 'legacy-build-root').absolutePath
+        ext.repos.repo {
+            uri.set('https://github.com/example/demo-lineage.git')
+            sourceSet('java') {
+                parserPlugin.set('org.flowdigger.antlr.java')
+                sourceDirectory.set('src/main/java')
+                includes.set(['**/*.java'])
+            }
+        }
+
+        def cfg = LineageConfigResolver.resolve(project, ext)
+        assertEquals(ext.lineageBuildRoot, cfg.buildRoot)
+    }
+
     private static LineagePipelineExtension baseExtension(File sourceRoot) {
         def ext = new LineagePipelineExtension()
         ext.sourceRoot = sourceRoot.absolutePath
-        ext.lineageBuildRoot = new File(sourceRoot, 'build/lineage').absolutePath
+        ext.buildRoot = new File(sourceRoot, 'build/lineage').absolutePath
         ext
     }
 }

@@ -8,10 +8,10 @@ class LineageGlobalTasks {
             cleanTask.description = "Clean project build outputs and lineage stages 2..9 while preserving 1.parse artifacts."
             cleanTask.outputs.upToDateWhen { false }
             cleanTask.doLast {
-                def lineageBuildRoot = (project.findProperty('lineageBuildRoot') ?: ext.lineageBuildRoot).toString()
+                def lineageBuildRoot = LineageConfigResolver.resolveBuildRoot(project, ext)
                 def lineageRoot = project.file(lineageBuildRoot)
                 if (!lineageRoot.exists()) {
-                    project.logger.lifecycle("lineageBuildRoot does not exist, skipping lineage stage cleanup: ${lineageRoot}")
+                    project.logger.lifecycle("buildRoot does not exist, skipping lineage stage cleanup: ${lineageRoot}")
                     return
                 }
 
@@ -30,7 +30,7 @@ class LineageGlobalTasks {
             group = "build"
             description = "Remove complete lineage build root including 1.parse."
             doLast {
-                def lineageBuildRoot = (project.findProperty('lineageBuildRoot') ?: ext.lineageBuildRoot).toString()
+                def lineageBuildRoot = LineageConfigResolver.resolveBuildRoot(project, ext)
                 project.delete(project.file(lineageBuildRoot))
             }
         }

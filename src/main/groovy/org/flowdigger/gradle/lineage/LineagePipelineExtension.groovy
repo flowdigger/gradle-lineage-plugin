@@ -2,6 +2,7 @@ package org.flowdigger.gradle.lineage
 
 class LineagePipelineExtension {
     String sourceRoot
+    String buildRoot
     String lineageBuildRoot
     Boolean skipLineageValidations
     List<String> schemaNames = []
@@ -15,6 +16,16 @@ class LineagePipelineExtension {
         closure.delegate = repos
         closure.resolveStrategy = Closure.DELEGATE_FIRST
         closure.call()
+    }
+
+    void setBuildRoot(String buildRoot) {
+        this.@buildRoot = buildRoot
+        this.@lineageBuildRoot = buildRoot
+    }
+
+    void setLineageBuildRoot(String lineageBuildRoot) {
+        this.@lineageBuildRoot = lineageBuildRoot
+        this.@buildRoot = lineageBuildRoot
     }
 }
 
