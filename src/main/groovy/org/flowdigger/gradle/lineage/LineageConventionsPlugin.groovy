@@ -13,7 +13,7 @@ class LineageConventionsPlugin implements Plugin<Project> {
 
         def ext = project.extensions.create('lineagePipeline', LineagePipelineExtension)
         ext.sourceRoot = project.rootProject.projectDir.parentFile.absolutePath
-        ext.lineageBuildRoot = (
+        ext.buildRoot = (
                 project.findProperty('buildRoot')
                         ?: project.findProperty('lineageBuildRoot')
                         ?: project.providers.environmentVariable('LINEAGE_BUILD_ROOT').orNull

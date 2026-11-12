@@ -67,6 +67,25 @@ class LineagePluginSanityTest {
     }
 
     @Test
+    void "registers language specific observe and direct-flow tasks for sql and java"() {
+        writeSettingsWithBuilds(testProjectDir)
+        writeLineageBuild(testProjectDir, null, true)
+
+        def tasksResult = runner(testProjectDir)
+                .withArguments('tasks', '--all')
+                .build()
+
+        [
+                'observeSqlSql',
+                'observeJavaJava',
+                'deriveSqlDirectFlowsSql',
+                'deriveJavaDirectFlowsJava'
+        ].each { taskName ->
+            assertTrue(tasksResult.output.contains(taskName), "Expected language task not found: ${taskName}")
+        }
+    }
+
+    @Test
     void "accepts configured appSticherStylesheet override path"() {
         writeSettingsWithBuilds(testProjectDir)
         def customStylesheet = new File(testProjectDir, 'lineage/call-app.custom.xsl')
@@ -116,10 +135,17 @@ rootProject.name = 'lineage-plugin-sanity'
 """.stripIndent()
     }
 
-    private static void writeLineageBuild(File projectDir, String appSticherStylesheet = null) {
+    private static void writeLineageBuild(File projectDir, String appSticherStylesheet = null, boolean includeSqlSourceSet = false) {
         def pipelineRoot = new File(System.getProperty('user.dir'), 'pipeline').absolutePath.replace('\\', '\\\\')
         def escapedOverridePath = appSticherStylesheet != null ? appSticherStylesheet.replace('\\', '\\\\') : null
         def optionalOverrideBlock = escapedOverridePath != null ? "  appSticherStylesheet = '${escapedOverridePath}'\n" : ""
+        def optionalSqlSourceSet = includeSqlSourceSet ? """
+      sourceSet('sql') {
+        parserPlugin.set('org.flowdigger.antlr.plsql')
+        sourceDirectory.set(file('sql'))
+        includes.set(['**/*.sql'])
+      }
+""" : ""
         new File(projectDir, 'build.gradle').text = """
 plugins {
   id 'base'
@@ -135,7 +161,7 @@ ext.set('lineagePluginPipelineRoot', '${pipelineRoot}')
 
 lineagePipeline {
   sourceRoot = rootProject.projectDir.absolutePath
-  lineageBuildRoot = rootProject.file('lineage-uniform').absolutePath
+  buildRoot = rootProject.file('lineage-uniform').absolutePath
 ${optionalOverrideBlock}
   repos {
     repo {
@@ -146,11 +172,15 @@ ${optionalOverrideBlock}
         sourceDirectory.set(file('src/main/java'))
         includes.set(['**/*.java'])
       }
+${optionalSqlSourceSet}
     }
   }
 }
 """.stripIndent()
         new File(projectDir, 'src/main/java').mkdirs()
+        if (includeSqlSourceSet) {
+            new File(projectDir, 'sql').mkdirs()
+        }
     }
 
     private static void writeStubCompanionPlugins(File projectDir) {
